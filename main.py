@@ -9,8 +9,7 @@ from time import sleep
 from settings import *
 from sprites import *
 
-def draw_text():
-    pass
+
 
 # Create the Game class
 class Game:
@@ -39,14 +38,17 @@ class Game:
         # init all variables, set up groups, instantiate classes etc
         self.all_sprites = pg.sprite.Group()
         self.walls = pg.sprite.Group()
-        self.enemy = pg.sprite.Group()
+        self.enemies = pg.sprite.Group()
+        self.player = pg.sprite.Group()
+        self.coins = pg.sprite.Group()
+        self.powerups = pg.sprite.Group()
         # create player object - top left corner will be (10,10)
         # self.player = Player(self, 10, 10)
         # create 10 unit rectangle
         # for x in range(10, 20):
             # Wall(self, x, 5)
         for row, tiles in enumerate(self.map_data): # function - creates tuples of 2 elements, tuple[0] being the index and tuple[1] being the actual element
-            print(tiles)
+            # print(tiles)
             for col, tile in enumerate(tiles):
                 print(tile)
                 if tile == '1':
@@ -55,6 +57,10 @@ class Game:
                     self.player = Player(self, col, row) # initialize player wherever letter P is located on txt file
                 if tile == 'E':
                     Enemy(self, col, row)
+                if tile == 'C':
+                    Coin(self, col, row)
+                if tile == 'Q':
+                    Powerup(self, col, row)
 
     def run(self):
         self.playing = True
@@ -63,6 +69,7 @@ class Game:
             self.events()
             self.update()
             self.draw()
+
 
     def quit(self):
         pg.quit() # close pygame
@@ -77,10 +84,19 @@ class Game:
         for y in range(0, WIDTH, TILESIZE):
             pg.draw.line(self.screen, LIGHTGREY, (0, y), (WIDTH, y)) # create horizontal lines
 
+
+    def draw_text(self, text, font_name, size, color, x, y):
+        font = pg.font.Font(pg.font.match_font(font_name), size)
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect()
+        text_rect.topleft = (x, y) # makes the topleft corner of the rectangle the (x,y) coords
+        self.screen.blit(text_surface, text_rect)
+
     def draw(self):
         self.screen.fill(BGCOLOR)
         self.draw_grid()
         self.all_sprites.draw(self.screen)
+        self.draw_text(str(self.player.lives), "arial", 50, BLACK, 10, 10)
         pg.display.flip()
 
     # get user input
