@@ -2,6 +2,7 @@
 
 # import necessary modules
 from settings import *
+from math import sqrt
 # import Sprite class
 from pygame.sprite import Sprite
 import pygame as pg
@@ -13,20 +14,16 @@ class Player(Sprite):
         Sprite.__init__(self, self.groups)
         self.game = game # allows player to interact and access everything in game class, used in main.py
         self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(YELLOW)
+        self.image.fill(BLACK)
         self.rect = self.image.get_rect()
         self.vx, self.vy = 0, 0
         self.x  = x * TILESIZE
         self.y = y * TILESIZE
-        self.lives = 100
+        self.lives = 1000
         self.moneybag = 0
         self.speed = 1
         self.powerup_time = 0
 
-
-    # def move(self, dx=0, dy=0):
-    #     self.x += dx
-    #     self.y += dy
 
     def get_keys(self):
         self.vx, self.vy = 0, 0
@@ -40,8 +37,8 @@ class Player(Sprite):
         if keys[pg.K_DOWN] or keys[pg.K_s]:
             self.vy = PLAYER_SPEED * self.speed
         if self.vx != 0 and self.vy != 0:
-            self.vx *= 0.7071
-            self.vy *= 0.7071
+            self.vx *= sqrt(2)/2
+            self.vy *= sqrt(2)/2
 
     def collide_with_walls(self, dir):
         if dir == 'x':
@@ -81,8 +78,6 @@ class Player(Sprite):
 
 
     def update(self):
-        # self.rect.x = self.x * TILESIZE
-        # self.rect.y = self.y * TILESIZE
         self.get_keys()
         self.x += self.vx * self.game.dt 
         # d = rt, so move player to x pos based on rate and how long it took to get there
@@ -137,8 +132,6 @@ class Enemy(Sprite):
                 self.rect.x = self.x
 
     def update(self):
-        # self.rect.x = self.x * TILESIZE
-        # self.rect.y = self.y * TILESIZE
         self.x += self.vx * self.game.dt 
         # d = rt, so move player to x pos based on rate and how long it took to get there
         self.y += self.vy * self.game.dt

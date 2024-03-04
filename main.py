@@ -1,5 +1,11 @@
 # This file was created by: Anthony Olakangil
 
+'''
+Game design goals:
+1. quests
+2. shop
+3. teleport
+'''
 # import necessary modules and libraries 
 import pygame as pg 
 import sys
@@ -42,13 +48,8 @@ class Game:
         self.player = pg.sprite.Group()
         self.coins = pg.sprite.Group()
         self.powerups = pg.sprite.Group()
-        # create player object - top left corner will be (10,10)
-        # self.player = Player(self, 10, 10)
-        # create 10 unit rectangle
-        # for x in range(10, 20):
-            # Wall(self, x, 5)
+
         for row, tiles in enumerate(self.map_data): # function - creates tuples of 2 elements, tuple[0] being the index and tuple[1] being the actual element
-            # print(tiles)
             for col, tile in enumerate(tiles):
                 print(tile)
                 if tile == '1':
@@ -97,6 +98,7 @@ class Game:
         self.draw_grid()
         self.all_sprites.draw(self.screen)
         self.draw_text(str(self.player.lives), "arial", 50, BLACK, 10, 10)
+        self.draw_text(str(self.player.moneybag), "arial", 50, BLACK, 900, 10)
         pg.display.flip()
 
     # get user input
@@ -104,20 +106,6 @@ class Game:
         for event in pg.event.get(): # check for user input
             if event.type == pg.QUIT: # press the 'x' and exit application
                 self.quit()
-    #         if event.type == pg.KEYDOWN: # using keyboard/mouse
-    #             # checking for keyboard events
-    #             # keysym of Left arrow key
-    #             if event.key == pg.K_LEFT:
-    #                 self.player.move(dx=-1)
-    #             # keysym of Right arrow key
-    #             if event.key == pg.K_RIGHT:
-    #                 self.player.move(dx=1)
-    #             # moving up
-    #             if event.key == pg.K_UP:
-    #                 self.player.move(dy=-1)
-    #             # moving down
-    #             if event.key == pg.K_DOWN:
-    #                 self.player.move(dy=+1)
     
     def show_start_screen(self):
         pass
@@ -128,10 +116,6 @@ class Game:
 
 # instantiating the Game class
 g = Game()
-# g.show_start_screen
 while True:
     g.new()
     g.run()
-    # g.show_go_screen()
-
-# calling the run method
