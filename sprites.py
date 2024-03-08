@@ -4,7 +4,7 @@
 from settings import *
 from math import sqrt
 # import Sprite class
-from pygame.sprite import Sprite
+from pygame.sprite import Group, Sprite
 import pygame as pg
 import time
 import math
@@ -261,3 +261,24 @@ class Boss(Sprite):
         self.follow_player(self.game.player)
         self.collide_with_walls('x')
         self.rect.y = self.y
+
+
+class Sword(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.swords
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((20, TILESIZE))
+        self.image.fill(WHITE)
+        
+        # Draw the sword on the image
+        # color, (x, y, width, height), outline
+        pg.draw.rect(self.image, SILVER, (3, 1, 4, TILESIZE), 0)  # Blade
+        pg.draw.rect(self.image, SILVER, (0, 16, 10, 6), 0)  # Hilt
+        
+        # Set the position of the sprite
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
