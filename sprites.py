@@ -230,11 +230,27 @@ class Boss(Sprite):
         self.vx = dx * ENEMY_SPEED
         self.vy = dy * ENEMY_SPEED
 
-    def collide_with_walls(self):
-        hits = pg.sprite.spritecollide(self, self.game.walls, False)
-        if hits:
-            self.vx *= 0
-            self.rect.x = self.x # unecessary? ask cozort
+    def collide_with_walls(self, dir):
+        if dir == 'x':
+            hits = pg.sprite.spritecollide(self, self.game.walls, False)
+            if hits:
+                if self.vx > 0:
+                    self.x = hits[0].rect.left - self.rect.width
+                    self.vx = 0
+                if self.vx < 0:
+                    self.x = hits[0].rect.right
+                self.vx = 0
+                self.rect.x = self.x
+        if dir == 'y':
+            hits = pg.sprite.spritecollide(self, self.game.walls, False)
+            if hits:
+                if self.vy > 0:
+                    self.y = hits[0].rect.left - self.rect.width
+                    self.vy = 0
+                if self.vy < 0:
+                    self.y = hits[0].rect.right
+                self.vy = 0
+                self.rect.y = self.y
 
 
     def update(self):
@@ -243,5 +259,5 @@ class Boss(Sprite):
         self.y += self.vy * self.game.dt
         self.rect.x = self.x
         self.follow_player(self.game.player)
-        self.collide_with_walls()
+        self.collide_with_walls('x')
         self.rect.y = self.y
