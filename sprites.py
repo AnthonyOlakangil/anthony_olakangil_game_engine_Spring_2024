@@ -25,6 +25,7 @@ class Player(Sprite):
         self.speed = 1
         self.powerup_time = 0
         self.allowed = False
+        self.weapon = False
 
 
     def get_keys(self):
@@ -63,8 +64,17 @@ class Player(Sprite):
                 self.rect.y = self.y
 
     def collide_with_enemies(self, kill):
+            self.enemy_hit = None
             hits = pg.sprite.spritecollide(self, self.game.enemies, kill)
             if hits:
+                if self.weapon:
+                    for sprite in self.game.enemies:
+                        if sprite == hits[0]:
+                            self.enemy_hit = sprite
+                            break
+                    self.enemy_hit.kill()
+                        
+
                 self.lives -= 10
                 print(self.lives)
                 return True
@@ -91,7 +101,11 @@ class Player(Sprite):
                         self.x, self.y = self.teleporter_x , self.teleporter_y  
                         # get rid of it so we don't have to handle teleporting back
                         self.destination_teleporter.kill() 
-                        
+            
+            if str(hits[0].__class__.__name__) == "Sword":
+                self.game.sword.follow_player()
+                self.weapon = True
+
                     
 
 
@@ -107,8 +121,9 @@ class Player(Sprite):
         self.collide_with_group(self.game.coins, True)
         self.collide_with_group(self.game.teleporters, False)
         self.collide_with_group(self.game.powerups, True)
+        self.collide_with_group(self.game.swords, False)
         if self.speed > 1 and time.time() - self.powerup_time >= 3: # powerup wears off after 3 seconds
-            self.speed = 1  
+            self.speed = 1
         if self.collide_with_enemies(False): # False: don't kill player sprite until health is equal to 0
             if self.lives == 0:
                 self.game.player.kill()
@@ -273,8 +288,8 @@ class Sword(Sprite):
         
         # Draw the sword on the image
         # color, (x, y, width, height), outline
-        pg.draw.rect(self.image, SILVER, (3, 1, 4, TILESIZE), 0)  # Blade
-        pg.draw.rect(self.image, SILVER, (0, 16, 10, 6), 0)  # Hilt
+        pg.draw.rect(self.image, SILVER, (5, 1, 4, TILESIZE), 0)  # Blade
+        pg.draw.rect(self.image, SILVER, (0, 16, 15, 6), 0)  # Hilt
         
         # Set the position of the sprite
         self.rect = self.image.get_rect()
@@ -282,3 +297,23 @@ class Sword(Sprite):
         self.y = y
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
+
+    def follow_player(self):
+        # Calculate the direction towards the player (forming a vector which represents 
+        # distance from boss to player sprite)
+        # dx = player.rect.centerx - self.rect.centerx
+        # dy = player.rect.centery - self.rect.centery
+
+        # # Calculate magnitude of this vector
+        # distance = math.hypot(dx, dy)
+        # # vector / magnitude = 1, scaling it down but keeping same direction 
+        # # allows for constant speed
+        # dx /= distance
+        # dy /= distance
+
+        # # Set the constant speed
+        # self.vx = dx * PLAYER_SPEED
+        # self.vy = dy * PLAYER_SPEED
+
+        self.rect.x = self.game.player.rect.x
+        self.rect.y = self.game.player.rect.y

@@ -68,7 +68,7 @@ class Game:
                 if tile == 'B':
                     Boss(self, col, row)
                 if tile == 'S':
-                    Sword(self, col, row)
+                    self.sword = Sword(self, col, row)
     def run(self):
         self.playing = True
         while self.playing:
