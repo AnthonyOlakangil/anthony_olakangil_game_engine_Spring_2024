@@ -2,8 +2,8 @@
 
 '''
 Game design goals:
-1. quests
-2. shop
+1. tasks
+2. weapon
 3. teleport
 '''
 # import necessary modules and libraries 
@@ -11,7 +11,6 @@ import pygame as pg
 import sys
 from random import randint
 from os import path
-from time import sleep
 from settings import *
 from sprites import *
 
@@ -48,7 +47,8 @@ class Game:
         self.player = pg.sprite.Group()
         self.coins = pg.sprite.Group()
         self.powerups = pg.sprite.Group()
-
+        self.teleporters = pg.sprite.Group()
+        self.mob = pg.sprite.Group()
         for row, tiles in enumerate(self.map_data): # function - creates tuples of 2 elements, tuple[0] being the index and tuple[1] being the actual element
             for col, tile in enumerate(tiles):
                 print(tile)
@@ -62,7 +62,10 @@ class Game:
                     Coin(self, col, row)
                 if tile == 'Q':
                     Powerup(self, col, row)
-
+                if tile == 'T':
+                    Teleporter(self, col, row)
+                if tile == 'B':
+                    Boss(self, col, row)
     def run(self):
         self.playing = True
         while self.playing:
@@ -78,6 +81,7 @@ class Game:
         
     def update(self):
         self.all_sprites.update()
+        self.teleporters.update()
 
     def draw_grid(self):
         for x in range(0, WIDTH, TILESIZE): 
@@ -97,6 +101,8 @@ class Game:
         self.screen.fill(BGCOLOR)
         self.draw_grid()
         self.all_sprites.draw(self.screen)
+        if self.player.allowed:
+            self.teleporters.draw(self.screen)
         self.draw_text(str(self.player.lives), "arial", 50, BLACK, 10, 10)
         self.draw_text(str(self.player.moneybag), "arial", 50, BLACK, 900, 10)
         pg.display.flip()
