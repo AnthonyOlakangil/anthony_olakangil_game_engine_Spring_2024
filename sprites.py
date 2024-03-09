@@ -73,6 +73,8 @@ class Player(Sprite):
                             self.enemy_hit = sprite
                             break
                     self.enemy_hit.kill()
+                    self.weapon = False
+                    self.game.sword.unequip()
                 else:
                     self.lives -= 10
                     # print(self.lives)
@@ -104,6 +106,8 @@ class Player(Sprite):
             if str(hits[0].__class__.__name__) == "Sword":
                 self.game.sword.follow_player()
                 self.weapon = True
+                self.game.sword.unequip()
+
 
                     
 
@@ -299,7 +303,6 @@ class Sword(Sprite):
         self.game = game
         self.image = pg.Surface((20, TILESIZE))
         self.image.fill(WHITE)
-        self.test = 0
         # Draw the sword on the image
         # color, (x, y, width, height), outline
         pg.draw.rect(self.image, SILVER, (5, 1, 4, TILESIZE), 0)  # Blade
@@ -332,11 +335,18 @@ class Sword(Sprite):
         self.rect.x = self.game.player.rect.x
         self.rect.y = self.game.player.rect.y
 
-    def collide_with_player(self):
-        hits = pg.sprite.spritecollideany(self, self.game.enemies)
-        if hits:
-            self.test += 1
-            print(self.test)
+    # def collide_with_enemy(self):
+    #     self.enemy_hit = None
+    #     hits = pg.sprite.spritecollideany(self, self.game.enemies)
+    #     if hits:
+    #         for sprite in self.game.enemies:
+    #             if sprite == hits[0]:
+    #                 self.enemy_hit = sprite
+    #         self.enemy_hit.kill()
+    #         self.game.player.weapon = False
+        
+    def unequip(self):
+        if self.game.player.weapon == False:
             self.kill()
 
 
