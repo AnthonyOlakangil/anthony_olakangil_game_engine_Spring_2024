@@ -48,7 +48,7 @@ class Game:
         self.coins = pg.sprite.Group()
         self.powerups = pg.sprite.Group()
         self.teleporters = pg.sprite.Group()
-        self.mob = pg.sprite.Group()
+        self.boss = pg.sprite.Group()
         self.swords = pg.sprite.Group()
         for row, tiles in enumerate(self.map_data): # function - creates tuples of 2 elements, tuple[0] being the index and tuple[1] being the actual element
             for col, tile in enumerate(tiles):

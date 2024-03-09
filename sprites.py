@@ -73,11 +73,10 @@ class Player(Sprite):
                             self.enemy_hit = sprite
                             break
                     self.enemy_hit.kill()
-                        
-
-                self.lives -= 10
-                print(self.lives)
-                return True
+                else:
+                    self.lives -= 10
+                    # print(self.lives)
+                    return True
 
     def collide_with_group(self, group, kill):
         hits = pg.sprite.spritecollide(self, group, kill)
@@ -214,7 +213,7 @@ class Teleporter(pg.sprite.Sprite):
 
 class Boss(Sprite):
     def __init__(self, game, x, y):
-        self.groups = game.all_sprites, game.enemies
+        self.groups = game.all_sprites, game.boss
         Sprite.__init__(self, self.groups)
         self.game = game # allows player to interact and access everything in game class, used in main.py
         self.image = pg.Surface((TILESIZE, TILESIZE))
@@ -227,6 +226,7 @@ class Boss(Sprite):
         self.x  = x * TILESIZE
         self.y = y * TILESIZE
         self.vx, self.vy = ENEMY_SPEED, 0
+        self.lives = 1000
 
     def follow_player(self, player):
         # Calculate the direction towards the player (forming a vector which represents 
@@ -267,6 +267,18 @@ class Boss(Sprite):
                 self.vy = 0
                 self.rect.y = self.y
 
+    def collide_with_player(self, kill):
+        player_group = pg.sprite.GroupSingle(self.game.player)
+        hits = pg.sprite.spritecollide(self, player_group, kill)
+        if hits:
+            if self.game.player.weapon:
+                self.lives -= 10
+                if self.lives == 0:
+                    self.kill()
+            else:
+                self.game.player.lives -= 50
+
+
 
     def update(self):
         self.x += self.vx * self.game.dt 
@@ -275,6 +287,8 @@ class Boss(Sprite):
         self.rect.x = self.x
         self.follow_player(self.game.player)
         self.collide_with_walls('x')
+        self.collide_with_player(False)
+        # print(self.lives)
         self.rect.y = self.y
 
 
@@ -285,7 +299,7 @@ class Sword(Sprite):
         self.game = game
         self.image = pg.Surface((20, TILESIZE))
         self.image.fill(WHITE)
-        
+        self.test = 0
         # Draw the sword on the image
         # color, (x, y, width, height), outline
         pg.draw.rect(self.image, SILVER, (5, 1, 4, TILESIZE), 0)  # Blade
@@ -317,3 +331,13 @@ class Sword(Sprite):
 
         self.rect.x = self.game.player.rect.x
         self.rect.y = self.game.player.rect.y
+
+    def collide_with_player(self):
+        hits = pg.sprite.spritecollideany(self, self.game.enemies)
+        if hits:
+            self.test += 1
+            print(self.test)
+            self.kill()
+
+
+        
