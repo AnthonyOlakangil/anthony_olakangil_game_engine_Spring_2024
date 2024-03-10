@@ -52,7 +52,6 @@ class Game:
         self.swords = pg.sprite.Group()
         for row, tiles in enumerate(self.map_data): # function - creates tuples of 2 elements, tuple[0] being the index and tuple[1] being the actual element
             for col, tile in enumerate(tiles):
-                print(tile)
                 if tile == '1':
                     Wall(self, col, row) # create walls where there is a 1
                 if tile == 'P':

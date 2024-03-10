@@ -2,12 +2,12 @@
 
 # import necessary modules
 from settings import *
-from math import sqrt
 # import Sprite class
 from pygame.sprite import Group, Sprite
 import pygame as pg
 import time
 import math
+import random as rand
 # Create a player class
 class Player(Sprite):
     def __init__(self, game, x, y): # game parameter is the self of the Game class
@@ -40,8 +40,8 @@ class Player(Sprite):
         if keys[pg.K_DOWN] or keys[pg.K_s]:
             self.vy = PLAYER_SPEED * self.speed
         if self.vx != 0 and self.vy != 0:
-            self.vx *= sqrt(2)/2
-            self.vy *= sqrt(2)/2
+            self.vx *= math.sqrt(2)/2
+            self.vy *= math.sqrt(2)/2
 
     def collide_with_walls(self, dir):
         if dir == 'x':
@@ -75,7 +75,8 @@ class Player(Sprite):
                     self.enemy_hit.kill()
                     self.weapon = False
                     self.game.sword.unequip()
-                else:
+                    # self.game.sword.relocate()
+                if not self.weapon:
                     self.lives -= 10
                     # print(self.lives)
                     return True
@@ -106,7 +107,7 @@ class Player(Sprite):
             if str(hits[0].__class__.__name__) == "Sword":
                 self.game.sword.follow_player()
                 self.weapon = True
-                self.game.sword.unequip()
+                # self.game.sword.unequip()
 
 
                     
@@ -277,10 +278,16 @@ class Boss(Sprite):
         if hits:
             if self.game.player.weapon:
                 self.lives -= 10
-                if self.lives == 0:
+                if self.lives <= 0:
                     self.kill()
-            else:
+            if not self.game.player.weapon:
                 self.game.player.lives -= 50
+                print(self.game.player.lives)
+                if self.game.player.lives <= 0:
+                    self.game.player.kill()
+                    print("you died")
+                    self.game.player.weapon = True
+                    self.vx, self.vy = 0, 0
 
 
 
@@ -294,6 +301,7 @@ class Boss(Sprite):
         self.collide_with_player(False)
         # print(self.lives)
         self.rect.y = self.y
+
 
 
 class Sword(Sprite):
@@ -347,7 +355,13 @@ class Sword(Sprite):
         
     def unequip(self):
         if self.game.player.weapon == False:
-            self.kill()
+            self.relocate()
+    
+    def relocate(self):
+        randx = rand.randrange(64, self.game.screen.get_width() - 64)
+        randy = rand.randrange(32, self.game.screen.get_width() - 32)
+        self.game.draw()
+        self.rect.x, self.rect.y = randx, randy
 
 
         
