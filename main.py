@@ -36,6 +36,7 @@ class Game:
         with open(path.join(game_folder, 'map.txt'), 'rt') as f: # reading map.txt
             for line in f:
                 self.map_data.append(line) # loading all contents from txt file into array to be used in 'new' method
+        print(self.map_data)
 
         
     

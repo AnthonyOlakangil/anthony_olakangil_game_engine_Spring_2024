@@ -358,10 +358,26 @@ class Sword(Sprite):
             self.relocate()
     
     def relocate(self):
-        randx = rand.randrange(64, self.game.screen.get_width() - 64)
-        randy = rand.randrange(32, self.game.screen.get_width() - 32)
-        self.game.draw()
-        self.rect.x, self.rect.y = randx, randy
+        # Loop until a valid position is found
+        while True:
+            # Choose a random position within the boundaries of the map
+
+            # self.game.map_data[0] is the first row of map_data
+            # subtract 1 bc/o indexing
+            randx = rand.randint(0, len(self.game.map_data[0]) - 1)
+            # randy accesses the entire map, not just map_data[0] because all of the indices 
+            # represent each row, and by extension the height of the map
+            randy = rand.randint(0, len(self.game.map_data) - 1)
+            
+            # Check if the chosen position is empty (no wall or other object)
+            # (y, x) instead of (x, y) --> randy is row index, randx is column index
+            # still ends up being (horizontal pos, vertical pos)
+            if self.game.map_data[randy][randx] == '.':
+                # Set the position of the sword to the chosen position
+                self.rect.x = randx * TILESIZE
+                self.rect.y = randy * TILESIZE
+                break  # Exit the loop once a valid position is found
+            
 
 
         
