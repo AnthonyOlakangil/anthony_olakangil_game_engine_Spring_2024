@@ -3,8 +3,8 @@
 '''
 Game design goals:
 1. tasks
-2. weapon
-3. teleport
+2. weapon (done)
+3. teleport (oone)
 '''
 # import necessary modules and libraries 
 import pygame as pg 

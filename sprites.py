@@ -309,17 +309,18 @@ class Sword(Sprite):
         self.groups = game.all_sprites, game.swords
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
-        self.image = pg.Surface((20, TILESIZE))
-        self.image.fill(WHITE)
-        # Draw the sword on the image
-        # color, (x, y, width, height), outline
-        pg.draw.rect(self.image, SILVER, (5, 1, 4, TILESIZE), 0)  # Blade
-        pg.draw.rect(self.image, SILVER, (0, 16, 15, 6), 0)  # Hilt
+        # self.image = pg.Surface((20, TILESIZE))
+        # self.image.fill(WHITE)
+        # # Draw the sword on the image
+        # # color, (x, y, width, height), outline
+        # pg.draw.rect(self.image, SILVER, (5, 1, 4, TILESIZE), 0)  # Blade
+        # pg.draw.rect(self.image, SILVER, (0, 16, 15, 6), 0)  # Hilt
         
+        #  load an image file instead of drawing it
+        self.image = pg.image.load("sword2.png").convert_alpha()  # retains transparent bg features
+        self.image = pg.transform.scale(self.image, (30, 50))
         # Set the position of the sprite
         self.rect = self.image.get_rect()
-        self.x = x
-        self.y = y
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
 
