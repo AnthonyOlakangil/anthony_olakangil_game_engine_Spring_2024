@@ -24,7 +24,6 @@ class Player(Sprite):
         self.moneybag = 0
         self.speed = 1
         self.powerup_time = 0
-        self.allowed = False
         self.weapon = False
 
 
@@ -73,6 +72,7 @@ class Player(Sprite):
                             self.enemy_hit = sprite
                             break
                     self.enemy_hit.kill()
+                    self.game.enemy_count -= 1
                     self.weapon = False
                     self.game.sword.unequip()
                     # self.game.sword.relocate()
@@ -108,10 +108,6 @@ class Player(Sprite):
                 self.game.sword.follow_player()
                 self.weapon = True
                 # self.game.sword.unequip()
-
-
-                    
-
 
     def update(self):
         self.get_keys()

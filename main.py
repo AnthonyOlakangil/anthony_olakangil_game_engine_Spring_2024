@@ -28,6 +28,7 @@ class Game:
         pg.key.set_repeat(500, 100)
         self.load_data()
         self.running = True
+        self.enemy_count = 0
  
  
      # load save game data etc
@@ -58,6 +59,7 @@ class Game:
                     self.player = Player(self, col, row) # initialize player wherever letter P is located on txt file
                 if tile == 'E':
                     Enemy(self, col, row)
+                    self.enemy_count += 1
                 if tile == 'C':
                     Coin(self, col, row)
                 if tile == 'Q':
@@ -101,7 +103,7 @@ class Game:
         self.screen.fill(BGCOLOR)
         self.draw_grid()
         self.all_sprites.draw(self.screen)
-        if self.player.allowed:
+        if self.enemy_count == 0:
             for row, tiles in enumerate(self.map_data): # function - creates tuples of 2 elements, tuple[0] being the index and tuple[1] being the actual element
                 for col, tile in enumerate(tiles):
                     if tile == 'T':
