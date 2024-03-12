@@ -232,6 +232,7 @@ class Boss(Sprite):
         self.y = y * TILESIZE
         self.vx, self.vy = ENEMY_SPEED, 0
         self.lives = 1000
+        # self.follow = False
 
     def follow_player(self, player):
         # Calculate the direction towards the player (forming a vector which represents 
@@ -240,12 +241,14 @@ class Boss(Sprite):
         dy = player.rect.centery - self.rect.centery
 
         # Calculate magnitude of this vector
-        distance = math.hypot(dx, dy)
+        self.distance = math.hypot(dx, dy)
         # vector / magnitude = 1, scaling it down but keeping same direction 
         # allows for constant speed
-        dx /= distance
-        dy /= distance
+        if self.distance == 0:
+            raise Exception("you are too close to the boss!") # end game logically instead of DivideByZeroError
 
+        dx /= self.distance
+        dy /= self.distance
         # Set the constant speed
         self.vx = dx * ENEMY_SPEED
         self.vy = dy * ENEMY_SPEED
@@ -284,6 +287,8 @@ class Boss(Sprite):
                 self.game.player.lives -= 50
                 print(self.game.player.lives)
                 if self.game.player.lives <= 0:
+                    # reset to 0 if it ever goes negative
+                    self.game.player.lives = 0
                     self.game.player.kill()
                     print("you died")
                     self.game.player.weapon = True
@@ -318,7 +323,7 @@ class Sword(Sprite):
         
         #  load an image file instead of drawing it
         self.image = pg.image.load("sword2.png").convert_alpha()  # retains transparent bg features
-        self.image = pg.transform.scale(self.image, (30, 50))
+        self.image = pg.transform.scale(self.image, (40, 60))
         # Set the position of the sprite
         self.rect = self.image.get_rect()
         self.rect.x = x * TILESIZE
@@ -332,12 +337,12 @@ class Sword(Sprite):
 
         # # Calculate magnitude of this vector
         # distance = math.hypot(dx, dy)
-        # # vector / magnitude = 1, scaling it down but keeping same direction 
+        # vector / magnitude = 1, scaling it down but keeping same direction 
         # # allows for constant speed
         # dx /= distance
         # dy /= distance
 
-        # # Set the constant speed
+        # set the constant speed
         # self.vx = dx * PLAYER_SPEED
         # self.vy = dy * PLAYER_SPEED
 

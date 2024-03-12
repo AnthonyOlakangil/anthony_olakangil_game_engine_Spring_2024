@@ -2,7 +2,7 @@
 
 '''
 Game design goals:
-1. tasks
+1. start screen/objective screen
 2. weapon (done)
 3. teleport (oone)
 '''
@@ -17,6 +17,7 @@ from sprites import *
 
 
 # Create the Game class
+
 class Game:
     # initialize the window settings
     def __init__(self):
@@ -36,8 +37,6 @@ class Game:
         with open(path.join(game_folder, 'map.txt'), 'rt') as f: # reading map.txt
             for line in f:
                 self.map_data.append(line) # loading all contents from txt file into array to be used in 'new' method
-        print(self.map_data)
-
         
     
     def new(self):
@@ -63,8 +62,6 @@ class Game:
                     Coin(self, col, row)
                 if tile == 'Q':
                     Powerup(self, col, row)
-                if tile == 'T':
-                    Teleporter(self, col, row)
                 if tile == 'B':
                     Boss(self, col, row)
                 if tile == 'S':
@@ -105,7 +102,11 @@ class Game:
         self.draw_grid()
         self.all_sprites.draw(self.screen)
         if self.player.allowed:
-            self.teleporters.draw(self.screen)
+            for row, tiles in enumerate(self.map_data): # function - creates tuples of 2 elements, tuple[0] being the index and tuple[1] being the actual element
+                for col, tile in enumerate(tiles):
+                    if tile == 'T':
+                        Teleporter(self, col, row)
+                        self.teleporters.draw(self.screen)
         self.draw_text(str(self.player.lives), "arial", 50, BLACK, 10, 10)
         self.draw_text(str(self.player.moneybag), "arial", 50, BLACK, 900, 10)
         pg.display.flip()
