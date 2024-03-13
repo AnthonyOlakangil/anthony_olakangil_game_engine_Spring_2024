@@ -29,6 +29,7 @@ class Game:
         self.load_data()
         self.running = True
         self.enemy_count = 0
+        self.waiting = None
  
  
      # load save game data etc
@@ -39,6 +40,29 @@ class Game:
             for line in f:
                 self.map_data.append(line) # loading all contents from txt file into array to be used in 'new' method
         
+    def show_start_screen(self):
+        self.screen.fill(BGCOLOR)
+        self.draw_text("Your Objectives:", "impact", 30, BLACK, WIDTH/2, (HEIGHT/2)-110)
+        self.draw_text("-Kill all static guards", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)-50)
+        self.draw_text("-Unlock the teleporter", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)-20)
+        self.draw_text("-Evade or fight the mob boss", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)+10)
+        self.draw_text("    -Don't get too close!", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)+40)
+        self.draw_text("Use powerups to speed away", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)+70)
+        self.draw_text("Don't die!", "impact", 30, BLACK, WIDTH/2, (HEIGHT/2)+110)
+        self.draw_text("Press any key to start", "couriernew", 30, BLACK, WIDTH/2, (HEIGHT/2)+210)
+        pg.display.flip()
+        self.wait_for_key()
+
+    def wait_for_key(self):
+        self.waiting = True
+        while self.waiting:
+            self.clock.tick(FPS)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    pg.quit()
+                    sys.exit()
+                if event.type == pg.KEYUP: # 'click to start' functionality
+                    self.waiting = False
     
     def new(self):
         # init all variables, set up groups, instantiate classes etc
@@ -69,12 +93,14 @@ class Game:
                 if tile == 'S':
                     self.sword = Sword(self, col, row)
     def run(self):
+        self.show_start_screen()
         self.playing = True
-        while self.playing:
-            self.dt = self.clock.tick(FPS) / 1000 # convert to seconds
-            self.events()
-            self.update()
-            self.draw()
+        if not self.waiting:
+            while self.playing:
+                self.dt = self.clock.tick(FPS) / 1000 # convert to seconds
+                self.events()
+                self.update()
+                self.draw()
 
 
     def quit(self):
@@ -96,7 +122,7 @@ class Game:
         font = pg.font.Font(pg.font.match_font(font_name), size)
         text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect()
-        text_rect.topleft = (x, y) # makes the topleft corner of the rectangle the (x,y) coords
+        text_rect.center = (x, y) # makes the topleft corner of the rectangle the (x,y) coords
         self.screen.blit(text_surface, text_rect)
 
     def draw(self):
@@ -120,12 +146,6 @@ class Game:
             if event.type == pg.QUIT: # press the 'x' and exit application
                 self.quit()
     
-    def show_start_screen(self):
-        pass
-
-    def show_go_screen(self):
-        pass
-        
 
 # instantiating the Game class
 g = Game()
