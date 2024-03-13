@@ -2,9 +2,10 @@
 
 '''
 Game design goals:
-1. start screen/objective screen
+1. start screen/objective screen (done)
 2. weapon (done)
 3. teleport (done)
+4. die screen/game over (TODO)
 '''
 # import necessary modules and libraries 
 import pygame as pg 
@@ -41,7 +42,7 @@ class Game:
                 self.map_data.append(line) # loading all contents from txt file into array to be used in 'new' method
         
     def show_start_screen(self):
-        self.screen.fill(BGCOLOR)
+        self.screen.fill(SILVER)
         self.draw_text("Your Objectives:", "impact", 30, BLACK, WIDTH/2, (HEIGHT/2)-110)
         self.draw_text("-Kill all static guards", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)-50)
         self.draw_text("-Unlock the teleporter", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)-20)
@@ -136,8 +137,8 @@ class Game:
                         self.teleporter = Teleporter(self, col, row)
                         self.teleporters.draw(self.screen)
 
-        self.draw_text(str(self.player.lives), "arial", 50, BLACK, 10, 10)
-        self.draw_text(str(self.player.moneybag), "arial", 50, BLACK, 970, 10)
+        self.draw_text(str(self.player.lives), "arial", 50, BLACK, 50, 25)
+        self.draw_text(str(self.player.moneybag), "arial", 50, BLACK, 975, 30)
         pg.display.flip()
 
     # get user input
