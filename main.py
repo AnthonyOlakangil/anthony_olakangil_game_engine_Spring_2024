@@ -4,7 +4,7 @@
 Game design goals:
 1. start screen/objective screen
 2. weapon (done)
-3. teleport (oone)
+3. teleport (done)
 '''
 # import necessary modules and libraries 
 import pygame as pg 
@@ -45,7 +45,7 @@ class Game:
         self.all_sprites = pg.sprite.Group()
         self.walls = pg.sprite.Group()
         self.enemies = pg.sprite.Group()
-        self.player = pg.sprite.Group()
+        self.player_group = pg.sprite.Group()
         self.coins = pg.sprite.Group()
         self.powerups = pg.sprite.Group()
         self.teleporters = pg.sprite.Group()
@@ -59,7 +59,7 @@ class Game:
                     self.player = Player(self, col, row) # initialize player wherever letter P is located on txt file
                 if tile == 'E':
                     Enemy(self, col, row)
-                    self.enemy_count += 1
+                    self.enemy_count = 1
                 if tile == 'C':
                     Coin(self, col, row)
                 if tile == 'Q':
@@ -107,10 +107,11 @@ class Game:
             for row, tiles in enumerate(self.map_data): # function - creates tuples of 2 elements, tuple[0] being the index and tuple[1] being the actual element
                 for col, tile in enumerate(tiles):
                     if tile == 'T':
-                        Teleporter(self, col, row)
+                        self.teleporter = Teleporter(self, col, row)
                         self.teleporters.draw(self.screen)
+
         self.draw_text(str(self.player.lives), "arial", 50, BLACK, 10, 10)
-        self.draw_text(str(self.player.moneybag), "arial", 50, BLACK, 900, 10)
+        self.draw_text(str(self.player.moneybag), "arial", 50, BLACK, 970, 10)
         pg.display.flip()
 
     # get user input

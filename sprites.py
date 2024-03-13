@@ -11,7 +11,7 @@ import random as rand
 # Create a player class
 class Player(Sprite):
     def __init__(self, game, x, y): # game parameter is the self of the Game class
-        self.groups = game.all_sprites, game.player
+        self.groups = game.all_sprites, game.player_group
         Sprite.__init__(self, self.groups)
         self.game = game # allows player to interact and access everything in game class, used in main.py
         self.image = pg.Surface((TILESIZE, TILESIZE))
@@ -25,6 +25,8 @@ class Player(Sprite):
         self.speed = 1
         self.powerup_time = 0
         self.weapon = False
+        self.teleported = False
+
 
 
     def get_keys(self):
@@ -94,16 +96,18 @@ class Player(Sprite):
                     for sprite in self.game.teleporters:
                         if sprite != hits[0]: # find the object of class Teleporter it didn't collide with
                             self.destination_teleporter = sprite
+                            print(len(self.game.player_group))
                             break
                     if self.destination_teleporter:
                         # get x,y coords of destination
-                        # move it one tile away so you don't get stuck
-                        self.teleporter_x = self.destination_teleporter.rect.topleft[0] + 32
+                        # move it a tile away so you don't get stuck
+                        self.teleporter_x = self.destination_teleporter.rect.topleft[0] - 32
                         self.teleporter_y = self.destination_teleporter.rect.topleft[1] + 32
                         self.x, self.y = self.teleporter_x , self.teleporter_y  
+                        print('should be gone')
                         # get rid of it so we don't have to handle teleporting back
-                        self.destination_teleporter.kill() 
-            
+                        self.teleported = True
+
             if str(hits[0].__class__.__name__) == "Sword":
                 self.game.sword.follow_player()
                 self.weapon = True
@@ -204,8 +208,8 @@ class Teleporter(pg.sprite.Sprite):
         self.groups = game.teleporters
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
-        self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(WHITE)
+        self.image = pg.image.load("teleporter.jpg").convert_alpha()  # retains transparent bg features
+        self.image = pg.transform.scale(self.image, (40, 60))
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -272,8 +276,8 @@ class Boss(Sprite):
                 self.rect.y = self.y
 
     def collide_with_player(self, kill):
-        player_group = pg.sprite.GroupSingle(self.game.player)
-        hits = pg.sprite.spritecollide(self, player_group, kill)
+        player_group = pg.sprite.GroupSingle(self.game.player_group)
+        hits = pg.sprite.spritecollide(self, self.game.player_group, kill)
         if hits:
             if self.game.player.weapon:
                 self.lives -= 10
