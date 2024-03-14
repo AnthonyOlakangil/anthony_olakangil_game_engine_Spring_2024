@@ -182,6 +182,8 @@ class Coin(pg.sprite.Sprite):
         self.groups = game.all_sprites, game.coins
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
+        # figure out how to load videos
+        # is convert_alpha() necessary?
         self.image = pg.image.load("coin_animation.gif").convert_alpha()
         self.image = pg.transform.scale(self.image, (30, 30))
         self.rect = self.image.get_rect()
@@ -231,7 +233,8 @@ class Boss(Sprite):
         self.x  = x * TILESIZE
         self.y = y * TILESIZE
         self.vx, self.vy = ENEMY_SPEED, 0
-        self.lives = 1000
+        # 1 million - make it impractical to kill boss without a weapon upgrade
+        self.lives = 1000000
         # self.follow = False
 
     def follow_player(self, player):
@@ -310,7 +313,7 @@ class Boss(Sprite):
 
 
 
-class Sword(Sprite):
+class Basic_sword(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.swords
         pg.sprite.Sprite.__init__(self, self.groups)
@@ -384,7 +387,29 @@ class Sword(Sprite):
                 self.rect.x = randx * TILESIZE
                 self.rect.y = randy * TILESIZE
                 break  # Exit the loop once a valid position is found
-            
+
+
+class Excalibur(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.swords
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        
+        #  load an image file instead of drawing it
+        '''
+        USE A DIFF SWORD FILE HERE
+        '''
+        self.image = pg.image.load("sword2.png").convert_alpha()  # retains transparent bg features
+        self.image = pg.transform.scale(self.image, (40, 60))
+        # Set the position of the sprite
+        self.rect = self.image.get_rect()
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+
+    def follow_player(self):
+        self.rect.x = self.game.player.rect.x
+        self.rect.y = self.game.player.rect.y
+
 
 
         

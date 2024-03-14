@@ -4,9 +4,15 @@
 Game design goals:
 1. start screen/objective screen (done)
 2. weapon (done)
-3. teleport (done)
-4. die screen/game over (done)
-5. respawn option if gameover (done)
+3. enemies (done)
+4. boss (done)
+5. coins (done)
+6. speed powerup (done)
+7. teleport (done)
+8. die screen/game over (done)
+9. respawn option if gameover (done)
+10. sound (TODO)
+11. shrink (TODO)A
 '''
 # import necessary modules and libraries 
 import pygame as pg 
