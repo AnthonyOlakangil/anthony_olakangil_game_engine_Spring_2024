@@ -182,8 +182,8 @@ class Coin(pg.sprite.Sprite):
         self.groups = game.all_sprites, game.coins
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
-        self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(YELLOW)
+        self.image = pg.image.load("coin_animation.gif").convert_alpha()
+        self.image = pg.transform.scale(self.image, (30, 30))
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
