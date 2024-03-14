@@ -49,7 +49,7 @@ class Game:
         self.draw_text("-Unlock the teleporter", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)-20)
         self.draw_text("-Evade or fight the mob boss", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)+10)
         self.draw_text("    -Don't get too close!", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)+40)
-        self.draw_text("Use powerups to speed away", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)+70)
+        self.draw_text("-Use powerups to speed away", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)+70)
         self.draw_text("Don't die!", "impact", 30, BLACK, WIDTH/2, (HEIGHT/2)+110)
         self.draw_text("Press any key to start", "couriernew", 30, BLACK, WIDTH/2, (HEIGHT/2)+210)
         pg.display.flip()
@@ -58,7 +58,7 @@ class Game:
     def show_end_screen(self):
         self.screen.fill(RED)
         self.draw_text("YOU DIED!", "impact", 30, BLACK, WIDTH/2, HEIGHT/2)
-        self.draw_text("click anywhere to restart", "couriernew", 30, BLACK, WIDTH/2, (HEIGHT/2)+210)
+        self.draw_text("press any key to restart", "couriernew", 30, BLACK, WIDTH/2, (HEIGHT/2)+50)
         pg.display.flip()
         self.wait_for_key()
 
