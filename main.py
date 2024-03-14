@@ -6,6 +6,7 @@ Game design goals:
 2. weapon (done)
 3. teleport (done)
 4. die screen/game over (TODO)
+5. respawn enemy option if gameover (TODO)
 '''
 # import necessary modules and libraries 
 import pygame as pg 
@@ -53,10 +54,19 @@ class Game:
         self.draw_text("Press any key to start", "couriernew", 30, BLACK, WIDTH/2, (HEIGHT/2)+210)
         pg.display.flip()
         self.wait_for_key()
+    
+    def show_end_screen(self):
+        self.screen.fill(RED)
+        self.draw_text("YOU DIED!", "impact", 30, BLACK, WIDTH/2, HEIGHT/2)
+        self.draw_text("click anywhere to restart", "couriernew", 30, BLACK, WIDTH/2, (HEIGHT/2)+210)
+        pg.display.flip()
+        self.wait_for_key()
+
 
     def wait_for_key(self):
         self.waiting = True
         while self.waiting:
+            # wait 1/30th second to maintain consistent FPS
             self.clock.tick(FPS)
             for event in pg.event.get():
                 if event.type == pg.QUIT:
@@ -96,12 +106,20 @@ class Game:
     def run(self):
         self.show_start_screen()
         self.playing = True
+        # if they have clicked to start/restart
         if not self.waiting:
             while self.playing:
                 self.dt = self.clock.tick(FPS) / 1000 # convert to seconds
                 self.events()
                 self.update()
                 self.draw()
+                if self.player.dead:
+                    self.show_end_screen()
+                    # reinstantiate player
+                    self.new()
+                    # redisplay start screen/restart game
+                    # recursion
+                    self.run()
 
 
     def quit(self):

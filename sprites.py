@@ -26,6 +26,7 @@ class Player(Sprite):
         self.powerup_time = 0
         self.weapon = False
         self.teleported = False
+        self.dead = False
 
 
 
@@ -104,8 +105,6 @@ class Player(Sprite):
                         self.teleporter_x = self.destination_teleporter.rect.topleft[0] - 32
                         self.teleporter_y = self.destination_teleporter.rect.topleft[1] + 32
                         self.x, self.y = self.teleporter_x , self.teleporter_y  
-                        print('should be gone')
-                        # get rid of it so we don't have to handle teleporting back
                         self.teleported = True
 
             if str(hits[0].__class__.__name__) == "Sword":
@@ -130,7 +129,8 @@ class Player(Sprite):
             self.speed = 1
         if self.collide_with_enemies(False): # False: don't kill player sprite until health is equal to 0
             if self.lives == 0:
-                self.game.player.kill()
+                self.kill()
+                self.dead = True
                 print('you died')
 # Create a wall class
 class Wall(Sprite):
@@ -290,6 +290,7 @@ class Boss(Sprite):
                     # reset to 0 if it ever goes negative
                     self.game.player.lives = 0
                     self.game.player.kill()
+                    self.game.player.dead = True
                     print("you died")
                     self.game.player.weapon = True
                     self.vx, self.vy = 0, 0
