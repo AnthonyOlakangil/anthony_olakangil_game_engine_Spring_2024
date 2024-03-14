@@ -107,7 +107,7 @@ class Player(Sprite):
                         self.x, self.y = self.teleporter_x , self.teleporter_y  
                         self.teleported = True
 
-            if str(hits[0].__class__.__name__) == "Sword":
+            if str(hits[0].__class__.__name__) == "Basic_sword":
                 self.game.sword.follow_player()
                 self.weapon = True
                 # self.game.sword.unequip()

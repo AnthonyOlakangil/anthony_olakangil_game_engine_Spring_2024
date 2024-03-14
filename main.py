@@ -12,7 +12,7 @@ Game design goals:
 8. die screen/game over (done)
 9. respawn option if gameover (done)
 10. sound (TODO)
-11. shrink (TODO)A
+11. shrink (TODO)
 '''
 # import necessary modules and libraries 
 import pygame as pg 
@@ -108,7 +108,7 @@ class Game:
                 if tile == 'B':
                     Boss(self, col, row)
                 if tile == 'S':
-                    self.sword = Sword(self, col, row)
+                    self.sword = Basic_sword(self, col, row)
     def run(self):
         self.show_start_screen()
         self.playing = True
