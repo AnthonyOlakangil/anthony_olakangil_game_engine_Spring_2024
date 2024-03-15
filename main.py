@@ -109,6 +109,9 @@ class Game:
                     Boss(self, col, row)
                 if tile == 'S':
                     self.sword = Basic_sword(self, col, row)
+                if tile == 'R':
+                    self.big_sword = Excalibur(self, col, row)
+                    
     def run(self):
         self.show_start_screen()
         self.playing = True
@@ -160,6 +163,8 @@ class Game:
                     if tile == 'T':
                         self.teleporter = Teleporter(self, col, row)
                         self.teleporters.draw(self.screen)
+        # else:
+        #     print(f"enemy count is: {self.enemy_count}")
 
         self.draw_text(str(self.player.lives), "arial", 50, BLACK, 50, 25)
         self.draw_text(str(self.player.moneybag), "arial", 50, BLACK, 975, 30)

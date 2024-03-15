@@ -24,7 +24,8 @@ class Player(Sprite):
         self.moneybag = 0
         self.speed = 1
         self.powerup_time = 0
-        self.weapon = False
+        self.weapon_basic = False
+        self.weapon_big = False
         self.teleported = False
         self.dead = False
 
@@ -69,17 +70,17 @@ class Player(Sprite):
             self.enemy_hit = None
             hits = pg.sprite.spritecollide(self, self.game.enemies, kill)
             if hits:
-                if self.weapon:
+                if self.weapon_basic:
                     for sprite in self.game.enemies:
                         if sprite == hits[0]:
                             self.enemy_hit = sprite
                             break
                     self.enemy_hit.kill()
                     self.game.enemy_count -= 1
-                    self.weapon = False
+                    self.weapon_basic = False
                     self.game.sword.unequip()
                     # self.game.sword.relocate()
-                if not self.weapon:
+                if not self.weapon_big and not self.weapon_basic:
                     self.lives -= 10
                     # print(self.lives)
                     return True
@@ -109,8 +110,15 @@ class Player(Sprite):
 
             if str(hits[0].__class__.__name__) == "Basic_sword":
                 self.game.sword.follow_player()
-                self.weapon = True
+                self.weapon_basic = True
                 # self.game.sword.unequip()
+
+            if str(hits[0].__class__.__name__) == "Excalibur":
+                if time.time() - self.game.big_sword.unlock_time >= 3:
+                    self.game.big_sword.ready = True
+                    self.game.big_sword.unlock()
+                    self.game.big_sword.follow_player()
+                self.weapon_big = True
 
     def update(self):
         self.get_keys()
@@ -280,13 +288,19 @@ class Boss(Sprite):
 
     def collide_with_player(self, kill):
         player_group = pg.sprite.GroupSingle(self.game.player_group)
-        hits = pg.sprite.spritecollide(self, self.game.player_group, kill)
+        hits = pg.sprite.spritecollide(self, player_group, kill)
         if hits:
-            if self.game.player.weapon:
+            if self.game.player.weapon_basic:
                 self.lives -= 10
+                print(f"boss lives: {self.lives}")
                 if self.lives <= 0:
                     self.kill()
-            if not self.game.player.weapon:
+            elif self.game.player.weapon_big:
+                self.lives -= 10000
+                print(f"boss lives: {self.lives}")
+                if self.lives <= 0:
+                    self.kill()
+            if not self.game.player.weapon_basic and not self.game.player.weapon_big:
                 self.game.player.lives -= 50
                 print(self.game.player.lives)
                 if self.game.player.lives <= 0:
@@ -364,7 +378,7 @@ class Basic_sword(Sprite):
     #         self.game.player.weapon = False
         
     def unequip(self):
-        if self.game.player.weapon == False:
+        if self.game.player.weapon_basic == False:
             self.relocate()
     
     def relocate(self):
@@ -393,18 +407,23 @@ class Excalibur(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.swords
         pg.sprite.Sprite.__init__(self, self.groups)
-        self.game = game
-        
-        #  load an image file instead of drawing it
-        '''
-        USE A DIFF SWORD FILE HERE
-        '''
-        self.image = pg.image.load("sword2.png").convert_alpha()  # retains transparent bg features
+        self.game = game 
+        self.image = pg.image.load("chest.png").convert_alpha()
         self.image = pg.transform.scale(self.image, (40, 60))
-        # Set the position of the sprite
         self.rect = self.image.get_rect()
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
+        self.unlock_time = time.time()
+        self.ready = False
+
+    def unlock(self):
+        if self.ready:
+            self.image = pg.image.load("rainbowsword.png").convert_alpha()  # retains transparent bg features
+            self.image = pg.transform.scale(self.image, (40, 60))
+            # Set the position of the sprite
+            self.rect = self.image.get_rect()
+        else:
+            print("unlocking...")
 
     def follow_player(self):
         self.rect.x = self.game.player.rect.x
