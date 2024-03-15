@@ -100,7 +100,7 @@ class Game:
                     self.player = Player(self, col, row) # initialize player wherever letter P is located on txt file
                 if tile == 'E':
                     Enemy(self, col, row)
-                    self.enemy_count += 1
+                    self.enemy_count = 1
                 if tile == 'C':
                     Coin(self, col, row)
                 if tile == 'Q':
@@ -108,7 +108,7 @@ class Game:
                 if tile == 'B':
                     Boss(self, col, row)
                 if tile == 'S':
-                    self.sword = Basic_sword(self, col, row)
+                    self.basic_sword = Basic_sword(self, col, row)
                 if tile == 'R':
                     self.big_sword = Excalibur(self, col, row)
                     

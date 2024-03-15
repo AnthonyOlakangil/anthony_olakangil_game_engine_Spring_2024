@@ -28,6 +28,7 @@ class Player(Sprite):
         self.weapon_big = False
         self.teleported = False
         self.dead = False
+        self.unlock_time = 0
 
 
 
@@ -78,7 +79,7 @@ class Player(Sprite):
                     self.enemy_hit.kill()
                     self.game.enemy_count -= 1
                     self.weapon_basic = False
-                    self.game.sword.unequip()
+                    self.game.basic_sword.unequip()
                     # self.game.sword.relocate()
                 if not self.weapon_big and not self.weapon_basic:
                     self.lives -= 10
@@ -109,16 +110,18 @@ class Player(Sprite):
                         self.teleported = True
 
             if str(hits[0].__class__.__name__) == "Basic_sword":
-                self.game.sword.follow_player()
+                self.game.basic_sword.follow_player()
                 self.weapon_basic = True
                 # self.game.sword.unequip()
 
             if str(hits[0].__class__.__name__) == "Excalibur":
-                if time.time() - self.game.big_sword.unlock_time >= 3:
-                    self.game.big_sword.ready = True
+                print("collision detected")
+                self.unlock_time = time.time()
+                if self.game.big_sword.ready:
                     self.game.big_sword.unlock()
+                    self.game.basic_sword.kill()
                     self.game.big_sword.follow_player()
-                self.weapon_big = True
+                    self.weapon_big = True
 
     def update(self):
         self.get_keys()
@@ -131,10 +134,15 @@ class Player(Sprite):
         self.collide_with_walls('y')
         self.collide_with_group(self.game.coins, True)
         self.collide_with_group(self.game.teleporters, False)
+        self.collide_with_group([self.game.big_sword], False)
+        if time.time() - self.unlock_time >= 3:
+            self.game.big_sword.ready = True
+        else:
+            print("unlocking...")
         self.collide_with_group(self.game.powerups, True)
-        self.collide_with_group(self.game.swords, False)
         if self.speed > 1 and time.time() - self.powerup_time >= 3: # powerup wears off after 3 seconds
             self.speed = 1
+        self.collide_with_group(self.game.swords, False)
         if self.collide_with_enemies(False): # False: don't kill player sprite until health is equal to 0
             if self.lives == 0:
                 self.kill()
@@ -413,7 +421,8 @@ class Excalibur(Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
-        self.unlock_time = time.time()
+        # initialize it for later
+        # self.unlock_time = None
         self.ready = False
 
     def unlock(self):
