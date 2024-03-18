@@ -28,7 +28,8 @@ class Player(Sprite):
         self.weapon_big = False
         self.teleported = False
         self.dead = False
-        self.unlock_time = 0
+        # self.unlock_time = 0
+        self.check_if_collided_once = 0
 
 
 
@@ -99,7 +100,7 @@ class Player(Sprite):
                     for sprite in self.game.teleporters:
                         if sprite != hits[0]: # find the object of class Teleporter it didn't collide with
                             self.destination_teleporter = sprite
-                            print(len(self.game.player_group))
+                            # print(len(self.game.player_group))
                             break
                     if self.destination_teleporter:
                         # get x,y coords of destination
@@ -115,13 +116,13 @@ class Player(Sprite):
                 # self.game.sword.unequip()
 
             if str(hits[0].__class__.__name__) == "Excalibur":
-                print("collision detected")
-                self.unlock_time = time.time()
-                if self.game.big_sword.ready:
-                    self.game.big_sword.unlock()
-                    self.game.basic_sword.kill()
-                    self.game.big_sword.follow_player()
-                    self.weapon_big = True
+                self.game.big_sword.ready = False
+                self.check_if_collided_once += 1
+                self.game.big_sword.unlock() # keeps checking if player has unlocked the chest; if they have, render sword image
+                self.game.basic_sword.kill() # no need for a worse weapon!
+                self.game.big_sword.follow_player()
+                self.weapon_big = True
+                return True
 
     def update(self):
         self.get_keys()
@@ -134,11 +135,7 @@ class Player(Sprite):
         self.collide_with_walls('y')
         self.collide_with_group(self.game.coins, True)
         self.collide_with_group(self.game.teleporters, False)
-        self.collide_with_group([self.game.big_sword], False)
-        if time.time() - self.unlock_time >= 3:
-            self.game.big_sword.ready = True
-        else:
-            print("unlocking...")
+        self.collide_with_group([self.game.big_sword], False) # put it in a list to avoid "object not iterable" error
         self.collide_with_group(self.game.powerups, True)
         if self.speed > 1 and time.time() - self.powerup_time >= 3: # powerup wears off after 3 seconds
             self.speed = 1
@@ -424,19 +421,29 @@ class Excalibur(Sprite):
         # initialize it for later
         # self.unlock_time = None
         self.ready = False
+        self.unlock_time = None
 
     def unlock(self):
+        if self.game.player.check_if_collided_once == 1:
+            self.unlock_time = time.time()
+        if time.time() - self.unlock_time <= 3:
+            print(f"unlocking: {((time.time() - self.unlock_time)/3):.2f}%") # print progress of unlocking /3 seconds
+        elif time.time() - self.unlock_time >= 3:
+            print("unlocked!") # figure out how to make it not neverending
+            self.ready = True
+
         if self.ready:
             self.image = pg.image.load("rainbowsword.png").convert_alpha()  # retains transparent bg features
             self.image = pg.transform.scale(self.image, (40, 60))
             # Set the position of the sprite
             self.rect = self.image.get_rect()
-        else:
-            print("unlocking...")
+        # else:
+            # print("unlocking...")
 
     def follow_player(self):
-        self.rect.x = self.game.player.rect.x
-        self.rect.y = self.game.player.rect.y
+        if self.ready:
+            self.rect.x = self.game.player.rect.x
+            self.rect.y = self.game.player.rect.y
 
 
 
