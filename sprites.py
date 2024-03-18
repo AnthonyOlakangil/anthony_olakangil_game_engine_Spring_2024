@@ -106,7 +106,7 @@ class Player(Sprite):
                         # get x,y coords of destination
                         # move it a tile away so you don't get stuck
                         self.teleporter_x = self.destination_teleporter.rect.topleft[0] - 32
-                        self.teleporter_y = self.destination_teleporter.rect.topleft[1] + 32
+                        self.teleporter_y = self.destination_teleporter.rect.topleft[1] + 64
                         self.x, self.y = self.teleporter_x , self.teleporter_y  
                         self.teleported = True
 
