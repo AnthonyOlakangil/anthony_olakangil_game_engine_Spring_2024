@@ -444,7 +444,3 @@ class Excalibur(Sprite):
         if self.ready:
             self.rect.x = self.game.player.rect.x
             self.rect.y = self.game.player.rect.y
-
-
-
-        
