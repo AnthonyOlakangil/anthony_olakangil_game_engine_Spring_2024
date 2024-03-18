@@ -12,7 +12,8 @@ Game design goals:
 8. die screen/game over (done)
 9. respawn option if gameover (done)
 10. sound (TODO)
-11. shrink (TODO)
+11. spawn in buffed enemies after unlocking new weapon
+12. key for weapon?
 '''
 # import necessary modules and libraries 
 import pygame as pg 
@@ -38,6 +39,7 @@ class Game:
         self.running = True
         self.enemy_count = 0
         self.waiting = None
+        self.sound = pg.mixer.Sound('themesong.wav') # load some music
  
  
      # load save game data etc
@@ -83,6 +85,7 @@ class Game:
     
     def new(self):
         # init all variables, set up groups, instantiate classes etc
+        self.sound.play(INDEFINITELY) # loop forever until window closed
         self.all_sprites = pg.sprite.Group()
         self.walls = pg.sprite.Group()
         self.enemies = pg.sprite.Group()
