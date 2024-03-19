@@ -12,8 +12,9 @@ Game design goals:
 8. die screen/game over (done)
 9. respawn option if gameover (done)
 10. sound (done)
-11. spawn in buffed enemies after unlocking new weapon(TODO)
+11. spawn in buffed enemies in unbeatable stage (done)
 12. require key for weapon chest?(TODO)
+13. do something with coins (TODO)
 '''
 # import necessary modules and libraries 
 import pygame as pg 
@@ -35,18 +36,19 @@ class Game:
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
         pg.key.set_repeat(500, 100)
-        self.load_data()
+        self.load_data('map.txt')
         self.running = True
         self.enemy_count = 0
+        self.buffed_enemy_count = 0
         self.waiting = None
         self.sound = pg.mixer.Sound('themesong.wav') # load some music
  
  
      # load save game data etc
-    def load_data(self):
+    def load_data(self, file_name):
         game_folder = path.dirname(__file__)
         self.map_data = []
-        with open(path.join(game_folder, 'map.txt'), 'rt') as f: # reading map.txt
+        with open(path.join(game_folder, file_name), 'rt') as f: # reading map.txt
             for line in f:
                 self.map_data.append(line) # loading all contents from txt file into array to be used in 'new' method
         
@@ -93,8 +95,9 @@ class Game:
         self.coins = pg.sprite.Group()
         self.powerups = pg.sprite.Group()
         self.teleporters = pg.sprite.Group()
-        self.boss = pg.sprite.Group()
+        self.boss_group = pg.sprite.Group()
         self.swords = pg.sprite.Group()
+        self.buffed_enemies = pg.sprite.Group()
         for row, tiles in enumerate(self.map_data): # function - creates tuples of 2 elements, tuple[0] being the index and tuple[1] being the actual element
             for col, tile in enumerate(tiles):
                 if tile == '1':
@@ -109,29 +112,74 @@ class Game:
                 if tile == 'Q':
                     Powerup(self, col, row)
                 if tile == 'B':
-                    Boss(self, col, row)
+                    self.boss = Boss(self, col, row)
                 if tile == 'S':
                     self.basic_sword = Basic_sword(self, col, row)
                 if tile == 'R':
                     self.big_sword = Excalibur(self, col, row)
+                if tile == 'G':
+                    BuffedEnemy(self, col, row)
+                    self.buffed_enemy_count += 1
+
+    def stage_2(self):
+        self.load_data('map2.txt')
+        self.new()  
+
+    def show_new_screen(self):
+        self.screen.fill(SILVER)
+        self.draw_text("Level: INSANE", "impact", 30, BLACK, WIDTH/2, (HEIGHT/2)-140)
+        self.draw_text("-all static guards have increased health and damage", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)-110)
+        self.draw_text("    -Unlock the teleporter by killing them!", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)-80)
+        self.draw_text("-There are multiple mob bosses.", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)-50)
+        self.draw_text("    -you need to unlock the chest for a stronger weapon!", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)-20)
+        self.draw_text("    -Don't get too close!", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)+10)
+        self.draw_text("-Use powerups to speed away", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)+40)
+        self.draw_text("Don't die!", "impact", 30, BLACK, WIDTH/2, (HEIGHT/2)+100)
+        self.draw_text("Press any key to start", "couriernew", 30, BLACK, WIDTH/2, (HEIGHT/2)+150)
+        pg.display.flip()
+        self.wait_for_key()
+
                     
     def run(self):
         self.show_start_screen()
         self.playing = True
         # if they have clicked to start/restart
         if not self.waiting:
-            while self.playing:
-                self.dt = self.clock.tick(FPS) / 1000 # convert to seconds
-                self.events()
-                self.update()
-                self.draw()
-                if self.player.dead:
-                    self.show_end_screen()
-                    # reinstantiate player
-                    self.new()
-                    # redisplay start screen/restart game
-                    # recursion
-                    self.run()
+            if not self.boss.dead:
+                while self.playing:
+                    self.dt = self.clock.tick(FPS) / 1000 # convert to seconds
+                    self.events()
+                    self.update()
+                    self.draw()
+                    if self.player.dead:
+                        self.show_end_screen()
+                        # reinstantiate player
+                        self.new()
+                        # redisplay start screen/restart game
+                        # recursion
+                        self.run()
+                    if self.boss.dead:
+                        self.stage_2()
+                        self.run_new_stage()
+
+
+
+    def run_new_stage(self):
+            self.show_new_screen()
+            self.playing = True
+            if not self.waiting:
+                while self.playing:
+                    self.dt = self.clock.tick(FPS) / 1000 # convert to seconds
+                    self.events()
+                    self.update()
+                    self.draw()
+                    if self.player.dead:
+                        self.show_end_screen()
+                        # reinstantiate player
+                        self.new()
+                        # redisplay start screen/restart game
+                        # recursion
+                        self.run()
 
 
     def quit(self):
@@ -160,7 +208,7 @@ class Game:
         self.screen.fill(BGCOLOR)
         self.draw_grid()
         self.all_sprites.draw(self.screen)
-        if self.enemy_count == 0:
+        if self.enemy_count == 0 and self.buffed_enemy_count == 0:
             for row, tiles in enumerate(self.map_data): # function - creates tuples of 2 elements, tuple[0] being the index and tuple[1] being the actual element
                 for col, tile in enumerate(tiles):
                     if tile == 'T':

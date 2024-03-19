@@ -72,7 +72,7 @@ class Player(Sprite):
             self.enemy_hit = None
             hits = pg.sprite.spritecollide(self, self.game.enemies, kill)
             if hits:
-                if self.weapon_basic:
+                if self.weapon_basic or self.weapon_big:
                     for sprite in self.game.enemies:
                         if sprite == hits[0]:
                             self.enemy_hit = sprite
@@ -84,6 +84,30 @@ class Player(Sprite):
                     # self.game.sword.relocate()
                 if not self.weapon_big and not self.weapon_basic:
                     self.lives -= 10
+                    # print(self.lives)
+                    return True
+    
+    def collide_with_buffed_enemies(self, kill):
+            self.buffed_enemy_hit = None
+            hits = pg.sprite.spritecollide(self, self.game.buffed_enemies, kill)
+            if hits:
+                if self.weapon_basic or self.weapon_big:
+                    for sprite in self.game.buffed_enemies:
+                        if sprite == hits[0]:
+                            self.buffed_enemy_hit = sprite
+                            break
+                    if self.weapon_basic:
+                        self.buffed_enemy_hit.lives -= 10
+                        if self.buffed_enemy_hit.lives == 0:
+                            self.buffed_enemy_hit.kill()
+                            self.game.buffed_enemy_count -= 1
+                            self.weapon_basic = False
+                            self.game.basic_sword.unequip()
+                    elif self.weapon_big:
+                        self.buffed_enemy_hit.kill()
+                    # self.game.sword.relocate()
+                if not self.weapon_big and not self.weapon_basic:
+                    self.lives -= 20
                     # print(self.lives)
                     return True
 
@@ -147,6 +171,12 @@ class Player(Sprite):
                 self.kill()
                 self.dead = True
                 print('you died')
+        if self.collide_with_buffed_enemies(False):
+            if self.lives == 0:
+                self.kill()
+                self.dead = True
+                print('you died')
+
 # Create a wall class
 class Wall(Sprite):
     # initialize Wall class with same attributes as Player class, different color
@@ -236,14 +266,14 @@ class Teleporter(pg.sprite.Sprite):
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
 
+
 class Boss(Sprite):
     def __init__(self, game, x, y):
-        self.groups = game.all_sprites, game.boss
+        self.groups = game.all_sprites, game.boss_group
         Sprite.__init__(self, self.groups)
         self.game = game # allows player to interact and access everything in game class, used in main.py
-        # add new png file
-        self.image = pg.image.load("boss.png").convert_alpha()
-        self.image = pg.transform.scale(self.image, (40, 60))
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.image.fill(GREEN)
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -252,35 +282,32 @@ class Boss(Sprite):
         self.x  = x * TILESIZE
         self.y = y * TILESIZE
         self.vx, self.vy = ENEMY_SPEED, 0
-        # 100,000 lives - make it impractical to kill boss without a weapon upgrade
-        self.lives = 100000
+        # 1 million - make it impractical to kill boss without a weapon upgrade
+        self.dead = False
+        self.lives = 1000000
         # self.follow = False
-
     def follow_player(self, player):
         # Calculate the direction towards the player (forming a vector which represents 
         # distance from boss to player sprite)
         dx = player.rect.centerx - self.rect.centerx
         dy = player.rect.centery - self.rect.centery
-
         # Calculate magnitude of this vector
         self.distance = math.hypot(dx, dy)
         # vector / magnitude = 1, scaling it down but keeping same direction 
         # allows for constant speed
         if self.distance == 0:
             raise Exception("you are too close to the boss!") # end game logically instead of DivideByZeroError
-
         dx /= self.distance
         dy /= self.distance
         # Set the constant speed
         self.vx = dx * ENEMY_SPEED
         self.vy = dy * ENEMY_SPEED
-
     def collide_with_walls(self, dir):
         if dir == 'x':
             hits = pg.sprite.spritecollide(self, self.game.walls, False)
             if hits:
                 if self.vx > 0:
-                    self.x = hits[0].rect.left - self.image.get_width()
+                    self.x = hits[0].rect.left - self.rect.width
                     self.vx = 0
                 if self.vx < 0:
                     self.x = hits[0].rect.right
@@ -290,27 +317,27 @@ class Boss(Sprite):
             hits = pg.sprite.spritecollide(self, self.game.walls, False)
             if hits:
                 if self.vy > 0:
-                    self.y = hits[0].rect.top - self.image.get_height()
+                    self.y = hits[0].rect.left - self.rect.width
                     self.vy = 0
                 if self.vy < 0:
-                    self.y = hits[0].rect.bottom
+                    self.y = hits[0].rect.right
                 self.vy = 0
                 self.rect.y = self.y
-
-
     def collide_with_player(self, kill):
         player_group = pg.sprite.GroupSingle(self.game.player_group)
         hits = pg.sprite.spritecollide(self, player_group, kill)
         if hits:
             if self.game.player.weapon_basic:
                 self.lives -= 10
-                print(f"boss lives with basic weapon: {self.lives}")
+                print(f"boss lives: {self.lives}")
                 if self.lives <= 0:
+                    self.dead = True
                     self.kill()
             elif self.game.player.weapon_big:
-                self.lives -= 1000
-                print(f"boss lives with big weapon: {self.lives}")
+                self.lives -= 10000
+                print(f"boss lives: {self.lives}")
                 if self.lives <= 0:
+                    self.dead = True
                     self.kill()
             if not self.game.player.weapon_basic and not self.game.player.weapon_big:
                 self.game.player.lives -= 50
@@ -323,20 +350,16 @@ class Boss(Sprite):
                     print("you died")
                     self.game.player.weapon = True
                     self.vx, self.vy = 0, 0
-
-
-
     def update(self):
         self.x += self.vx * self.game.dt 
         # d = rt, so move player to x pos based on rate and how long it took to get there
         self.y += self.vy * self.game.dt
         self.rect.x = self.x
         self.follow_player(self.game.player)
-        self.collide_with_walls('y')
+        self.collide_with_walls('x')
         self.collide_with_player(False)
         # print(self.lives)
         self.rect.y = self.y
-
 
 
 class Basic_sword(Sprite):
@@ -435,7 +458,7 @@ class Excalibur(Sprite):
         if self.game.player.check_if_collided_once == 1:
             self.unlock_time = time.time()
         if time.time() - self.unlock_time <= 3:
-            print(f"unlocking: {((time.time() - self.unlock_time)/3):.2f}%") # print progress of unlocking /3 seconds
+            print(f"unlocking: {(((time.time() - self.unlock_time)/3)*100):.2f}%") # print progress of unlocking /3 seconds
         elif time.time() - self.unlock_time >= 3:
             print("unlocked!")
             self.ready = True
@@ -453,3 +476,38 @@ class Excalibur(Sprite):
         if self.ready:
             self.rect.x = self.game.player.rect.x
             self.rect.y = self.game.player.rect.y
+
+
+class BuffedEnemy(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.buffed_enemies
+        Sprite.__init__(self, self.groups)
+        self.game = game # allows player to interact and access everything in game class, used in main.py
+        self.image = pg.image.load("boss.png").convert_alpha()  # retains transparent bg features
+        self.image = pg.transform.scale(self.image, (40, 60))
+        # Set the position of the sprite
+        self.rect = self.image.get_rect()
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+        self.x = x
+        self.y = y
+        self.rect.x = self.x
+        self.rect.y = self.y
+        self.x  = x * TILESIZE
+        self.y = y * TILESIZE
+        self.vx, self.vy = ENEMY_SPEED, 0
+        self.lives = 100
+
+    def collide_with_walls(self):
+        hits = pg.sprite.spritecollide(self, self.game.walls, False)
+        if hits:
+            self.vx *= -1
+            self.rect.x = self.x 
+
+    def update(self):
+        self.x += self.vx * self.game.dt 
+        # d = rt, so move player to x pos based on rate and how long it took to get there
+        self.y += self.vy * self.game.dt
+        self.rect.x = self.x
+        self.collide_with_walls()
+        self.rect.y = self.y
