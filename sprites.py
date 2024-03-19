@@ -116,11 +116,13 @@ class Player(Sprite):
                 # self.game.sword.unequip()
 
             if str(hits[0].__class__.__name__) == "Excalibur":
+                self.game.player.basic_sword = False # make sure it's not still "equipped"
                 self.game.big_sword.ready = False
                 self.check_if_collided_once += 1
-                self.game.big_sword.unlock() # keeps checking if player has unlocked the chest; if they have, render sword image
+                if not self.game.big_sword.stop_checking:
+                    self.game.big_sword.unlock() # keeps checking if player has unlocked the chest; if they have, render sword image
                 self.game.basic_sword.kill() # no need for a worse weapon!
-                self.game.big_sword.follow_player()
+                # self.game.big_sword.follow_player()
                 self.weapon_big = True
                 return True
 
@@ -135,7 +137,7 @@ class Player(Sprite):
         self.collide_with_walls('y')
         self.collide_with_group(self.game.coins, True)
         self.collide_with_group(self.game.teleporters, False)
-        self.collide_with_group([self.game.big_sword], False) # put it in a list to avoid "object not iterable" error
+        self.collide_with_group([self.game.big_sword], False) # make it an iterable to avoid error
         self.collide_with_group(self.game.powerups, True)
         if self.speed > 1 and time.time() - self.powerup_time >= 3: # powerup wears off after 3 seconds
             self.speed = 1
@@ -165,9 +167,12 @@ class Enemy(Sprite):
         self.groups = game.all_sprites, game.enemies
         Sprite.__init__(self, self.groups)
         self.game = game # allows player to interact and access everything in game class, used in main.py
-        self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(RED)
+        self.image = pg.image.load("enemy.png").convert_alpha()  # retains transparent bg features
+        self.image = pg.transform.scale(self.image, (40, 60))
+        # Set the position of the sprite
         self.rect = self.image.get_rect()
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
         self.x = x
         self.y = y
         self.rect.x = self.x
@@ -236,8 +241,9 @@ class Boss(Sprite):
         self.groups = game.all_sprites, game.boss
         Sprite.__init__(self, self.groups)
         self.game = game # allows player to interact and access everything in game class, used in main.py
-        self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(GREEN)
+        # add new png file
+        self.image = pg.image.load("boss.png").convert_alpha()
+        self.image = pg.transform.scale(self.image, (40, 60))
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -246,8 +252,8 @@ class Boss(Sprite):
         self.x  = x * TILESIZE
         self.y = y * TILESIZE
         self.vx, self.vy = ENEMY_SPEED, 0
-        # 1 million - make it impractical to kill boss without a weapon upgrade
-        self.lives = 1000000
+        # 100,000 lives - make it impractical to kill boss without a weapon upgrade
+        self.lives = 100000
         # self.follow = False
 
     def follow_player(self, player):
@@ -274,7 +280,7 @@ class Boss(Sprite):
             hits = pg.sprite.spritecollide(self, self.game.walls, False)
             if hits:
                 if self.vx > 0:
-                    self.x = hits[0].rect.left - self.rect.width
+                    self.x = hits[0].rect.left - self.image.get_width()
                     self.vx = 0
                 if self.vx < 0:
                     self.x = hits[0].rect.right
@@ -284,12 +290,13 @@ class Boss(Sprite):
             hits = pg.sprite.spritecollide(self, self.game.walls, False)
             if hits:
                 if self.vy > 0:
-                    self.y = hits[0].rect.left - self.rect.width
+                    self.y = hits[0].rect.top - self.image.get_height()
                     self.vy = 0
                 if self.vy < 0:
-                    self.y = hits[0].rect.right
+                    self.y = hits[0].rect.bottom
                 self.vy = 0
                 self.rect.y = self.y
+
 
     def collide_with_player(self, kill):
         player_group = pg.sprite.GroupSingle(self.game.player_group)
@@ -297,12 +304,12 @@ class Boss(Sprite):
         if hits:
             if self.game.player.weapon_basic:
                 self.lives -= 10
-                print(f"boss lives: {self.lives}")
+                print(f"boss lives with basic weapon: {self.lives}")
                 if self.lives <= 0:
                     self.kill()
             elif self.game.player.weapon_big:
-                self.lives -= 10000
-                print(f"boss lives: {self.lives}")
+                self.lives -= 1000
+                print(f"boss lives with big weapon: {self.lives}")
                 if self.lives <= 0:
                     self.kill()
             if not self.game.player.weapon_basic and not self.game.player.weapon_big:
@@ -325,7 +332,7 @@ class Boss(Sprite):
         self.y += self.vy * self.game.dt
         self.rect.x = self.x
         self.follow_player(self.game.player)
-        self.collide_with_walls('x')
+        self.collide_with_walls('y')
         self.collide_with_player(False)
         # print(self.lives)
         self.rect.y = self.y
@@ -422,6 +429,7 @@ class Excalibur(Sprite):
         # self.unlock_time = None
         self.ready = False
         self.unlock_time = None
+        self.stop_checking = False
 
     def unlock(self):
         if self.game.player.check_if_collided_once == 1:
@@ -429,8 +437,9 @@ class Excalibur(Sprite):
         if time.time() - self.unlock_time <= 3:
             print(f"unlocking: {((time.time() - self.unlock_time)/3):.2f}%") # print progress of unlocking /3 seconds
         elif time.time() - self.unlock_time >= 3:
-            print("unlocked!") # figure out how to make it not neverending
+            print("unlocked!")
             self.ready = True
+            # self.stop_checking = True
 
         if self.ready:
             self.image = pg.image.load("rainbowsword.png").convert_alpha()  # retains transparent bg features
@@ -440,7 +449,7 @@ class Excalibur(Sprite):
         # else:
             # print("unlocking...")
 
-    def follow_player(self):
+    def update(self):
         if self.ready:
             self.rect.x = self.game.player.rect.x
             self.rect.y = self.game.player.rect.y

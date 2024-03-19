@@ -11,9 +11,9 @@ Game design goals:
 7. teleport (done)
 8. die screen/game over (done)
 9. respawn option if gameover (done)
-10. sound (TODO)
-11. spawn in buffed enemies after unlocking new weapon
-12. key for weapon?
+10. sound (done)
+11. spawn in buffed enemies after unlocking new weapon(TODO)
+12. require key for weapon chest?(TODO)
 '''
 # import necessary modules and libraries 
 import pygame as pg 
@@ -103,7 +103,7 @@ class Game:
                     self.player = Player(self, col, row) # initialize player wherever letter P is located on txt file
                 if tile == 'E':
                     Enemy(self, col, row)
-                    self.enemy_count += 1
+                    self.enemy_count = 1
                 if tile == 'C':
                     Coin(self, col, row)
                 if tile == 'Q':
