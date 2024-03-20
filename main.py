@@ -106,7 +106,7 @@ class Game:
                     self.player = Player(self, col, row) # initialize player wherever letter P is located on txt file
                 if tile == 'E':
                     Enemy(self, col, row)
-                    self.enemy_count = 1
+                    self.enemy_count += 1
                 if tile == 'C':
                     Coin(self, col, row)
                 if tile == 'Q':
@@ -153,6 +153,9 @@ class Game:
                     self.draw()
                     if self.player.dead:
                         self.show_end_screen()
+                        # make sure that it recounts them from 0
+                        self.enemy_count = 0
+                        print(self.enemy_count)
                         # reinstantiate player
                         self.new()
                         # redisplay start screen/restart game
@@ -161,8 +164,6 @@ class Game:
                     if self.boss.dead:
                         self.stage_2()
                         self.run_new_stage()
-
-
 
     def run_new_stage(self):
             self.show_new_screen()

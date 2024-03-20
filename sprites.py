@@ -295,13 +295,15 @@ class Boss(Sprite):
         self.distance = math.hypot(dx, dy)
         # vector / magnitude = 1, scaling it down but keeping same direction 
         # allows for constant speed
-        if self.distance == 0:
-            raise Exception("you are too close to the boss!") # end game logically instead of DivideByZeroError
-        dx /= self.distance
-        dy /= self.distance
-        # Set the constant speed
-        self.vx = dx * ENEMY_SPEED
-        self.vy = dy * ENEMY_SPEED
+        # if self.distance == 0:
+        #     pass
+        #     # raise Exception("you are too close to the boss!") # end game logically instead of DivideByZeroError
+        if self.distance != 0:
+            dx /= self.distance
+            dy /= self.distance
+            # Set the constant speed
+            self.vx = dx * ENEMY_SPEED
+            self.vy = dy * ENEMY_SPEED
     def collide_with_walls(self, dir):
         if dir == 'x':
             hits = pg.sprite.spritecollide(self, self.game.walls, False)
@@ -327,15 +329,15 @@ class Boss(Sprite):
         player_group = pg.sprite.GroupSingle(self.game.player_group)
         hits = pg.sprite.spritecollide(self, player_group, kill)
         if hits:
-            if self.game.player.weapon_basic:
+            if self.game.player.weapon_basic and not self.game.big_sword.ready:
                 self.lives -= 10
-                print(f"boss lives: {self.lives}")
+                print(f"boss lives with basic weapon: {self.lives}")
                 if self.lives <= 0:
                     self.dead = True
                     self.kill()
-            elif self.game.player.weapon_big:
+            elif self.game.player.weapon_big and self.game.big_sword.ready:
                 self.lives -= 10000
-                print(f"boss lives: {self.lives}")
+                print(f"boss lives with big weapon: {self.lives}")
                 if self.lives <= 0:
                     self.dead = True
                     self.kill()
@@ -421,17 +423,16 @@ class Basic_sword(Sprite):
         while True:
             # Choose a random position within the boundaries of the map
 
-            # self.game.map_data[0] is the first row of map_data
             # subtract 1 bc/o indexing
-            randx = rand.randint(0, len(self.game.map_data[0]) - 1)
-            # randy accesses the entire map, not just map_data[0] because all of the indices 
+            randx = rand.randint(0, len(self.game.map_data) - 1)
             # represent each row, and by extension the height of the map
             randy = rand.randint(0, len(self.game.map_data) - 1)
             
+            # ensure it doesn't spawn inside unreachable area
+            if not (randx >= (32*8) and randx <= (32*23)) and (randy >= (32*5) and randy <= (32*18)):
+                continue
             # Check if the chosen position is empty (no wall or other object)
-            # (y, x) instead of (x, y) --> randy is row index, randx is column index
-            # still ends up being (horizontal pos, vertical pos)
-            if self.game.map_data[randy][randx] == '.':
+            if self.game.map_data[randx][randy] == '.':
                 # Set the position of the sword to the chosen position
                 self.rect.x = randx * TILESIZE
                 self.rect.y = randy * TILESIZE
@@ -474,6 +475,7 @@ class Excalibur(Sprite):
 
     def update(self):
         if self.ready:
+            print('update got called')
             self.rect.x = self.game.player.rect.x
             self.rect.y = self.game.player.rect.y
 
