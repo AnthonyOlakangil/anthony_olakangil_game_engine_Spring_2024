@@ -13,8 +13,6 @@ Game design goals:
 9. respawn option if gameover (done)
 10. sound (done)
 11. spawn in buffed enemies in unbeatable stage (done)
-12. require key for weapon chest?(TODO)
-13. do something with coins (TODO)
 '''
 # import necessary modules and libraries 
 import pygame as pg 
@@ -62,6 +60,7 @@ class Game:
         self.draw_text("-Use powerups to speed away", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)+70)
         self.draw_text("Don't die!", "impact", 30, BLACK, WIDTH/2, (HEIGHT/2)+110)
         self.draw_text("Press any key to start", "couriernew", 30, BLACK, WIDTH/2, (HEIGHT/2)+210)
+        self.draw_text("Press R to restart", "couriernew", 30, BLACK, WIDTH/2, (HEIGHT/2)+240)
         pg.display.flip()
         self.wait_for_key()
     
@@ -131,11 +130,19 @@ class Game:
         self.draw_text("-all static guards have increased health and damage", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)-110)
         self.draw_text("    -Unlock the teleporter by killing them!", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)-80)
         self.draw_text("-There are multiple mob bosses.", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)-50)
-        self.draw_text("    -you need to unlock the chest for a stronger weapon!", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)-20)
+        self.draw_text("    -There is no weapon upgrade. Collect all coins to complete level", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)-20)
         self.draw_text("    -Don't get too close!", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)+10)
         self.draw_text("-Use powerups to speed away", "comicsansms", 30, BLACK, WIDTH/2, (HEIGHT/2)+40)
         self.draw_text("Don't die!", "impact", 30, BLACK, WIDTH/2, (HEIGHT/2)+100)
         self.draw_text("Press any key to start", "couriernew", 30, BLACK, WIDTH/2, (HEIGHT/2)+150)
+        self.draw_text("Press R to restart", "couriernew", 30, BLACK, WIDTH/2, (HEIGHT/2)+180)
+        pg.display.flip()
+        self.wait_for_key()
+
+    def show_finish_screen(self):
+        self.screen.fill(SKYBLUE)
+        self.draw_text("Level Complete!", "impact", 30, BLACK, WIDTH/2, (HEIGHT/2))
+        self.draw_text("Press any key to play again", "couriernew", 30, BLACK, WIDTH/2, (HEIGHT/2)+150)
         pg.display.flip()
         self.wait_for_key()
 
@@ -155,7 +162,6 @@ class Game:
                         self.show_end_screen()
                         # make sure that it recounts them from 0
                         self.enemy_count = 0
-                        print(self.enemy_count)
                         # reinstantiate player
                         self.new()
                         # redisplay start screen/restart game
@@ -164,6 +170,9 @@ class Game:
                     if self.boss.dead:
                         self.stage_2()
                         self.run_new_stage()
+                        # if player collected minimum number of coins, game is complete
+                        if self.player.moneybag >= 50:
+                            self.show_end_screen()
 
     def run_new_stage(self):
             self.show_new_screen()
@@ -224,10 +233,16 @@ class Game:
 
     # get user input
     def events(self):
+        keys = pg.key.get_pressed()
         for event in pg.event.get(): # check for user input
             if event.type == pg.QUIT: # press the 'x' and exit application
                 self.quit()
-    
+        # restart functionality
+        if keys[pg.K_r]:
+            self.enemy_count = 0
+            self.buffed_enemy_count = 0
+            self.new()
+            self.run()
 
 # instantiating the Game class
 g = Game()

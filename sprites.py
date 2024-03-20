@@ -429,7 +429,7 @@ class Basic_sword(Sprite):
             randy = rand.randint(0, len(self.game.map_data) - 1)
             
             # ensure it doesn't spawn inside unreachable area
-            if not (randx >= (32*8) and randx <= (32*23)) and (randy >= (32*5) and randy <= (32*18)):
+            if (randx >= (32*8) and randx <= (32*23)) and (randy >= (32*5) and randy <= (32*18)):
                 continue
             # Check if the chosen position is empty (no wall or other object)
             if self.game.map_data[randx][randy] == '.':
@@ -461,8 +461,9 @@ class Excalibur(Sprite):
         if time.time() - self.unlock_time <= 3:
             print(f"unlocking: {(((time.time() - self.unlock_time)/3)*100):.2f}%") # print progress of unlocking /3 seconds
         elif time.time() - self.unlock_time >= 3:
-            print("unlocked!")
-            self.ready = True
+            if not self.ready:
+                print("unlocked!")
+                self.ready = True
             # self.stop_checking = True
 
         if self.ready:
@@ -475,7 +476,6 @@ class Excalibur(Sprite):
 
     def update(self):
         if self.ready:
-            print('update got called')
             self.rect.x = self.game.player.rect.x
             self.rect.y = self.game.player.rect.y
 
