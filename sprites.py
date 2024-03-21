@@ -104,10 +104,15 @@ class Player(Sprite):
                             self.weapon_basic = False
                             self.game.basic_sword.unequip()
                     elif self.weapon_big:
-                        self.buffed_enemy_hit.kill()
+                        self.buffed_enemy_hit.lives -= 100
+                        if self.buffed_enemy_hit.lives == 0:
+                            self.buffed_enemy_hit.kill()
+                            self.game.buffed_enemy_count -= 1
                     # self.game.sword.relocate()
-                if not self.weapon_big and not self.weapon_basic:
+                else:
+                    print('no sword equipped')
                     self.lives -= 20
+                    print('life -= 20')
                     # print(self.lives)
                     return True
 
@@ -427,12 +432,10 @@ class Basic_sword(Sprite):
             randx = rand.randint(0, len(self.game.map_data) - 1)
             # represent each row, and by extension the height of the map
             randy = rand.randint(0, len(self.game.map_data) - 1)
-            
-            # ensure it doesn't spawn inside unreachable area
-            if (randx >= (32*8) and randx <= (32*23)) and (randy >= (32*5) and randy <= (32*18)):
-                continue
+
             # Check if the chosen position is empty (no wall or other object)
             if self.game.map_data[randx][randy] == '.':
+                print(self.game.map_data[randx][randy])
                 # Set the position of the sword to the chosen position
                 self.rect.x = randx * TILESIZE
                 self.rect.y = randy * TILESIZE
@@ -462,7 +465,7 @@ class Excalibur(Sprite):
             print(f"unlocking: {(((time.time() - self.unlock_time)/3)*100):.2f}%") # print progress of unlocking /3 seconds
         elif time.time() - self.unlock_time >= 3:
             if not self.ready:
-                print("unlocked!")
+                # print("unlocked!")
                 self.ready = True
             # self.stop_checking = True
 

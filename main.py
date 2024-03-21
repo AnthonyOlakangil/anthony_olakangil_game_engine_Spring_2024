@@ -40,7 +40,7 @@ class Game:
         self.buffed_enemy_count = 0
         self.waiting = None
         self.sound = pg.mixer.Sound('themesong.wav') # load some music
- 
+        self.store = 0
  
      # load save game data etc
     def load_data(self, file_name):
@@ -105,7 +105,7 @@ class Game:
                     self.player = Player(self, col, row) # initialize player wherever letter P is located on txt file
                 if tile == 'E':
                     Enemy(self, col, row)
-                    self.enemy_count += 1
+                    self.enemy_count = 1
                 if tile == 'C':
                     Coin(self, col, row)
                 if tile == 'Q':
@@ -162,34 +162,39 @@ class Game:
                         self.show_end_screen()
                         # make sure that it recounts them from 0
                         self.enemy_count = 0
-                        # reinstantiate player
+                        # reinstantiate all sprites
                         self.new()
                         # redisplay start screen/restart game
                         # recursion
                         self.run()
                     if self.boss.dead:
+                        self.player.weapon_basic = False
+                        self.player.weapon_big = False
+                        self.store += self.player.moneybag
                         self.stage_2()
                         self.run_new_stage()
-                        # if player collected minimum number of coins, game is complete
-                        if self.player.moneybag >= 50:
-                            self.show_end_screen()
-
+                        
     def run_new_stage(self):
-            self.show_new_screen()
-            self.playing = True
-            if not self.waiting:
-                while self.playing:
-                    self.dt = self.clock.tick(FPS) / 1000 # convert to seconds
-                    self.events()
-                    self.update()
-                    self.draw()
-                    if self.player.dead:
-                        self.show_end_screen()
-                        # reinstantiate player
-                        self.new()
-                        # redisplay start screen/restart game
-                        # recursion
-                        self.run()
+        self.show_new_screen()
+        self.playing = True
+        if not self.waiting:
+            self.player.moneybag += self.store
+            while self.playing:
+                self.dt = self.clock.tick(FPS) / 1000 # convert to seconds
+                self.events()
+                self.update()
+                self.draw()
+                if self.player.moneybag >= 30:
+                    self.show_finish_screen()
+                # print("buffed enemies: " + str(self.buffed_enemy_count))
+                # print("reg enemies: " + str(self.enemy_count))
+                if self.player.dead:
+                    self.show_end_screen()
+                    # reinstantiate player
+                    self.new()
+                    # redisplay start screen/restart game
+                    # recursion
+                    self.run_new_stage()
 
 
     def quit(self):
@@ -218,6 +223,7 @@ class Game:
         self.screen.fill(BGCOLOR)
         self.draw_grid()
         self.all_sprites.draw(self.screen)
+        print(self.buffed_enemy_count, "and", self.enemy_count)
         if self.enemy_count == 0 and self.buffed_enemy_count == 0:
             for row, tiles in enumerate(self.map_data): # function - creates tuples of 2 elements, tuple[0] being the index and tuple[1] being the actual element
                 for col, tile in enumerate(tiles):
@@ -241,6 +247,8 @@ class Game:
         if keys[pg.K_r]:
             self.enemy_count = 0
             self.buffed_enemy_count = 0
+            # restart from lvl 1
+            self.load_data('map.txt')
             self.new()
             self.run()
 
