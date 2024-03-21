@@ -105,7 +105,7 @@ class Game:
                     self.player = Player(self, col, row) # initialize player wherever letter P is located on txt file
                 if tile == 'E':
                     Enemy(self, col, row)
-                    self.enemy_count = 1
+                    self.enemy_count += 1
                 if tile == 'C':
                     Coin(self, col, row)
                 if tile == 'Q':
@@ -186,6 +186,9 @@ class Game:
                 self.draw()
                 if self.player.moneybag >= 30:
                     self.show_finish_screen()
+                    self.load_data('map.txt')
+                    self.new()
+                    self.run()
                 # print("buffed enemies: " + str(self.buffed_enemy_count))
                 # print("reg enemies: " + str(self.enemy_count))
                 if self.player.dead:
