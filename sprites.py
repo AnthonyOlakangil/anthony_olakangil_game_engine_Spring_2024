@@ -3,11 +3,12 @@
 # import necessary modules
 from settings import *
 # import Sprite class
-from pygame.sprite import Group, Sprite
+from pygame.sprite import Sprite
 import pygame as pg
 import time
 import math
 import random as rand
+
 # Create a player class
 class Player(Sprite):
     def __init__(self, game, x, y): # game parameter is the self of the Game class
@@ -26,13 +27,11 @@ class Player(Sprite):
         self.powerup_time = 0
         self.weapon_basic = False
         self.weapon_big = False
-        self.teleported = False
         self.dead = False
         # self.unlock_time = 0
         self.check_if_collided_once = 0
 
-
-
+    # wait for user input from wasd or arrow keys to move
     def get_keys(self):
         self.vx, self.vy = 0, 0
         keys = pg.key.get_pressed()
@@ -44,6 +43,7 @@ class Player(Sprite):
             self.vy = -PLAYER_SPEED * self.speed
         if keys[pg.K_DOWN] or keys[pg.K_s]:
             self.vy = PLAYER_SPEED * self.speed
+        # make movement more free; not tile based
         if self.vx != 0 and self.vy != 0:
             self.vx *= math.sqrt(2)/2
             self.vy *= math.sqrt(2)/2
@@ -52,19 +52,19 @@ class Player(Sprite):
         if dir == 'x':
             hits = pg.sprite.spritecollide(self, self.game.walls, False)
             if hits:
-                if self.vx > 0:
+                if self.vx > 0: # collision from the left
                     self.x = hits[0].rect.left - self.rect.width
                 if self.vx < 0:
-                    self.x = hits[0].rect.right
+                    self.x = hits[0].rect.right # collision from the right
                 self.vx = 0
                 self.rect.x = self.x
         if dir == 'y':
             hits = pg.sprite.spritecollide(self, self.game.walls, False)
             if hits:
                 if self.vy > 0:
-                    self.y = hits[0].rect.top - self.rect.width
+                    self.y = hits[0].rect.top - self.rect.width # collision from top
                 if self.vy < 0:
-                    self.y = hits[0].rect.bottom
+                    self.y = hits[0].rect.bottom # collision from bottom
                 self.vy = 0
                 self.rect.y = self.y
 
@@ -74,17 +74,20 @@ class Player(Sprite):
             if hits:
                 if self.weapon_basic or self.weapon_big:
                     for sprite in self.game.enemies:
+                        # determine which enemy in the group player collided with
                         if sprite == hits[0]:
                             self.enemy_hit = sprite
                             break
+
                     self.enemy_hit.kill()
                     self.game.enemy_count -= 1
                     self.weapon_basic = False
+                    # drop basic sword after each collision
                     self.game.basic_sword.unequip()
-                    # self.game.sword.relocate()
+
                 if not self.weapon_big and not self.weapon_basic:
+                    # without a sword, lose hitpoints
                     self.lives -= 10
-                    # print(self.lives)
                     return True
     
     def collide_with_buffed_enemies(self, kill):
@@ -92,6 +95,7 @@ class Player(Sprite):
             hits = pg.sprite.spritecollide(self, self.game.buffed_enemies, kill)
             if hits:
                 if self.weapon_basic or self.weapon_big:
+                    # determine which sprite in the group was collided with
                     for sprite in self.game.buffed_enemies:
                         if sprite == hits[0]:
                             self.buffed_enemy_hit = sprite
@@ -103,17 +107,15 @@ class Player(Sprite):
                             self.game.buffed_enemy_count -= 1
                             self.weapon_basic = False
                             self.game.basic_sword.unequip()
+
                     elif self.weapon_big:
+                        # big sword does more damage, equipped permanently
                         self.buffed_enemy_hit.lives -= 100
                         if self.buffed_enemy_hit.lives == 0:
                             self.buffed_enemy_hit.kill()
                             self.game.buffed_enemy_count -= 1
-                    # self.game.sword.relocate()
                 else:
-                    print('no sword equipped')
                     self.lives -= 20
-                    print('life -= 20')
-                    # print(self.lives)
                     return True
 
     def collide_with_group(self, group, kill):
@@ -127,13 +129,13 @@ class Player(Sprite):
             if str(hits[0].__class__.__name__) == "Teleporter":
                     self.destination_teleporter = None
                     for sprite in self.game.teleporters:
+                        # determine which of the 2 sprites was NOT collided with
                         if sprite != hits[0]: # find the object of class Teleporter it didn't collide with
                             self.destination_teleporter = sprite
-                            # print(len(self.game.player_group))
                             break
                     if self.destination_teleporter:
                         # get x,y coords of destination
-                        # move it a tile away so you don't get stuck
+                        # move 1 tile left 2 tiles down of teleporter so player doesn't get stuck
                         self.teleporter_x = self.destination_teleporter.rect.topleft[0] - 32
                         self.teleporter_y = self.destination_teleporter.rect.topleft[1] + 64
                         self.x, self.y = self.teleporter_x , self.teleporter_y  
@@ -142,14 +144,13 @@ class Player(Sprite):
             if str(hits[0].__class__.__name__) == "Basic_sword":
                 self.game.basic_sword.follow_player()
                 self.weapon_basic = True
-                # self.game.sword.unequip()
 
             if str(hits[0].__class__.__name__) == "Excalibur":
                 self.game.player.basic_sword = False # make sure it's not still "equipped"
                 self.game.big_sword.ready = False
+                # only track time of the first collision
                 self.check_if_collided_once += 1
-                if not self.game.big_sword.stop_checking:
-                    self.game.big_sword.unlock() # keeps checking if player has unlocked the chest; if they have, render sword image
+                self.game.big_sword.unlock() # keeps checking if player has unlocked the chest; if they have, render sword image
                 self.game.basic_sword.kill() # no need for a worse weapon!
                 # self.game.big_sword.follow_player()
                 self.weapon_big = True
@@ -158,7 +159,7 @@ class Player(Sprite):
     def update(self):
         self.get_keys()
         self.x += self.vx * self.game.dt 
-        # d = rt, so move player to x pos based on rate and how long it took to get there
+        # d = rt, so move player to pos based on rate and how long it takes to get there (based on FPS)
         self.y += self.vy * self.game.dt
         self.rect.x = self.x
         self.collide_with_walls('x')
@@ -202,8 +203,8 @@ class Enemy(Sprite):
         self.groups = game.all_sprites, game.enemies
         Sprite.__init__(self, self.groups)
         self.game = game # allows player to interact and access everything in game class, used in main.py
-        self.image = pg.image.load("enemy.png").convert_alpha()  # retains transparent bg features
-        self.image = pg.transform.scale(self.image, (40, 60))
+        self.image = pg.image.load("./static/enemy.png").convert_alpha()  # retains transparent bg features and pixel format
+        self.image = pg.transform.scale(self.image, (40, 60)) # scale it down
         # Set the position of the sprite
         self.rect = self.image.get_rect()
         self.rect.x = x * TILESIZE
@@ -214,13 +215,15 @@ class Enemy(Sprite):
         self.rect.y = self.y
         self.x  = x * TILESIZE
         self.y = y * TILESIZE
+        # only move back and forth (x direction)
         self.vx, self.vy = ENEMY_SPEED, 0
 
     def collide_with_walls(self):
             hits = pg.sprite.spritecollide(self, self.game.walls, False)
             if hits:
+                # go back and forth 
                 self.vx *= -1
-                self.rect.x = self.x # unecessary? ask cozort
+                self.rect.x = self.x
 
     def update(self):
         self.x += self.vx * self.game.dt 
@@ -235,10 +238,8 @@ class Coin(pg.sprite.Sprite):
         self.groups = game.all_sprites, game.coins
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
-        # figure out how to load videos
-        # is convert_alpha() necessary?
-        self.image = pg.image.load("coin_animation.gif").convert_alpha()
-        self.image = pg.transform.scale(self.image, (30, 30))
+        self.image = pg.image.load("./static/coin_animation.gif").convert_alpha()
+        self.image = pg.transform.scale(self.image, (30, 30)) # scale it down
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -250,8 +251,8 @@ class Powerup(pg.sprite.Sprite):
         self.groups = game.all_sprites, game.powerups
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
-        self.image = pg.image.load("speed.png").convert_alpha()
-        self.image = pg.transform.scale(self.image, (60, 60))
+        self.image = pg.image.load("./static/speed.png").convert_alpha()
+        self.image = pg.transform.scale(self.image, (60, 60)) # scale it down
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -263,14 +264,13 @@ class Teleporter(pg.sprite.Sprite):
         self.groups = game.teleporters
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
-        self.image = pg.image.load("teleporter.jpg").convert_alpha()  # retains transparent bg features
-        self.image = pg.transform.scale(self.image, (40, 60))
+        self.image = pg.image.load("./static/teleporter.jpg").convert_alpha()  # retains transparent bg features
+        self.image = pg.transform.scale(self.image, (40, 60)) # scale it down
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
-
 
 class Boss(Sprite):
     def __init__(self, game, x, y):
@@ -286,29 +286,31 @@ class Boss(Sprite):
         self.rect.y = self.y
         self.x  = x * TILESIZE
         self.y = y * TILESIZE
-        self.vx, self.vy = ENEMY_SPEED, 0
-        # 1 million - make it impractical to kill boss without a weapon upgrade
+        # initialize velocity as 0
+        self.vx, self.vy = 0, 0
+        # 1 million lives - make it impractical to kill boss without a weapon upgrade
         self.dead = False
         self.lives = 1000000
-        # self.follow = False
     def follow_player(self, player):
         # Calculate the direction towards the player (forming a vector which represents 
         # distance from boss to player sprite)
         dx = player.rect.centerx - self.rect.centerx
         dy = player.rect.centery - self.rect.centery
+
         # Calculate magnitude of this vector
         self.distance = math.hypot(dx, dy)
+
+        if self.distance == 0:
+            raise Exception("you are too close to the boss!") # end game logically instead of DivideByZeroError
+        
         # vector / magnitude = 1, scaling it down but keeping same direction 
         # allows for constant speed
-        # if self.distance == 0:
-        #     pass
-        #     # raise Exception("you are too close to the boss!") # end game logically instead of DivideByZeroError
-        if self.distance != 0:
-            dx /= self.distance
-            dy /= self.distance
-            # Set the constant speed
-            self.vx = dx * ENEMY_SPEED
-            self.vy = dy * ENEMY_SPEED
+        dx /= self.distance
+        dy /= self.distance
+        # Set the constant speed
+        self.vx = dx * ENEMY_SPEED
+        self.vy = dy * ENEMY_SPEED
+
     def collide_with_walls(self, dir):
         if dir == 'x':
             hits = pg.sprite.spritecollide(self, self.game.walls, False)
@@ -330,8 +332,9 @@ class Boss(Sprite):
                     self.y = hits[0].rect.right
                 self.vy = 0
                 self.rect.y = self.y
+
     def collide_with_player(self, kill):
-        player_group = pg.sprite.GroupSingle(self.game.player_group)
+        player_group = pg.sprite.GroupSingle(self.game.player_group) # GroupSingle to avoid object not iterable error
         hits = pg.sprite.spritecollide(self, player_group, kill)
         if hits:
             if self.game.player.weapon_basic and not self.game.big_sword.ready:
@@ -348,24 +351,23 @@ class Boss(Sprite):
                     self.kill()
             if not self.game.player.weapon_basic and not self.game.player.weapon_big:
                 self.game.player.lives -= 50
-                print(self.game.player.lives)
                 if self.game.player.lives <= 0:
                     # reset to 0 if it ever goes negative
                     self.game.player.lives = 0
                     self.game.player.kill()
                     self.game.player.dead = True
                     print("you died")
-                    self.game.player.weapon = True
-                    self.vx, self.vy = 0, 0
+                    self.vx, self.vy = 0, 0\
+                    
     def update(self):
         self.x += self.vx * self.game.dt 
         # d = rt, so move player to x pos based on rate and how long it took to get there
         self.y += self.vy * self.game.dt
         self.rect.x = self.x
         self.follow_player(self.game.player)
+        # don't check for collision in y dir
         self.collide_with_walls('x')
         self.collide_with_player(False)
-        # print(self.lives)
         self.rect.y = self.y
 
 
@@ -374,15 +376,8 @@ class Basic_sword(Sprite):
         self.groups = game.all_sprites, game.swords
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
-        # self.image = pg.Surface((20, TILESIZE))
-        # self.image.fill(WHITE)
-        # # Draw the sword on the image
-        # # color, (x, y, width, height), outline
-        # pg.draw.rect(self.image, SILVER, (5, 1, 4, TILESIZE), 0)  # Blade
-        # pg.draw.rect(self.image, SILVER, (0, 16, 15, 6), 0)  # Hilt
-        
         #  load an image file instead of drawing it
-        self.image = pg.image.load("sword2.png").convert_alpha()  # retains transparent bg features
+        self.image = pg.image.load("./static/sword2.png").convert_alpha()  # retains transparent bg features
         self.image = pg.transform.scale(self.image, (40, 60))
         # Set the position of the sprite
         self.rect = self.image.get_rect()
@@ -390,34 +385,8 @@ class Basic_sword(Sprite):
         self.rect.y = y * TILESIZE
 
     def follow_player(self):
-        # Calculate the direction towards the player (forming a vector which represents 
-        # distance from boss to player sprite)
-        # dx = player.rect.centerx - self.rect.centerx
-        # dy = player.rect.centery - self.rect.centery
-
-        # # Calculate magnitude of this vector
-        # distance = math.hypot(dx, dy)
-        # vector / magnitude = 1, scaling it down but keeping same direction 
-        # # allows for constant speed
-        # dx /= distance
-        # dy /= distance
-
-        # set the constant speed
-        # self.vx = dx * PLAYER_SPEED
-        # self.vy = dy * PLAYER_SPEED
-
         self.rect.x = self.game.player.rect.x
         self.rect.y = self.game.player.rect.y
-
-    # def collide_with_enemy(self):
-    #     self.enemy_hit = None
-    #     hits = pg.sprite.spritecollideany(self, self.game.enemies)
-    #     if hits:
-    #         for sprite in self.game.enemies:
-    #             if sprite == hits[0]:
-    #                 self.enemy_hit = sprite
-    #         self.enemy_hit.kill()
-    #         self.game.player.weapon = False
         
     def unequip(self):
         if self.game.player.weapon_basic == False:
@@ -427,16 +396,14 @@ class Basic_sword(Sprite):
         # Loop until a valid position is found
         while True:
             # Choose a random position within the boundaries of the map
-
             # subtract 1 bc/o indexing
             randx = rand.randint(0, len(self.game.map_data) - 1)
-            # represent each row, and by extension the height of the map
             randy = rand.randint(0, len(self.game.map_data) - 1)
 
             # Check if the chosen position is empty (no wall or other object)
             if self.game.map_data[randx][randy] == '.':
                 print(self.game.map_data[randx][randy])
-                # Set the position of the sword to the chosen position
+                # Set the position of the sword to the valid position
                 self.rect.x = randx * TILESIZE
                 self.rect.y = randy * TILESIZE
                 break  # Exit the loop once a valid position is found
@@ -447,49 +414,44 @@ class Excalibur(Sprite):
         self.groups = game.all_sprites, game.swords
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game 
-        self.image = pg.image.load("chest.png").convert_alpha()
+        self.image = pg.image.load("./static/chest.png").convert_alpha()
         self.image = pg.transform.scale(self.image, (40, 60))
         self.rect = self.image.get_rect()
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
-        # initialize it for later
-        # self.unlock_time = None
         self.ready = False
         self.unlock_time = None
-        self.stop_checking = False
 
     def unlock(self):
+        # only track time relative to the first collision detected
         if self.game.player.check_if_collided_once == 1:
             self.unlock_time = time.time()
         if time.time() - self.unlock_time <= 3:
-            print(f"unlocking: {(((time.time() - self.unlock_time)/3)*100):.2f}%") # print progress of unlocking /3 seconds
+            # same time logic as speed cooldown
+            print(f"unlocking: {(((time.time() - self.unlock_time)/3)*100):.2f}%") # print progress of unlocking /3 seconds, 2 decimal places
         elif time.time() - self.unlock_time >= 3:
             if not self.ready:
-                # print("unlocked!")
                 self.ready = True
-            # self.stop_checking = True
 
         if self.ready:
-            self.image = pg.image.load("rainbowsword.png").convert_alpha()  # retains transparent bg features
+            self.image = pg.image.load("./static/rainbowsword.png").convert_alpha()  # retains transparent bg features
             self.image = pg.transform.scale(self.image, (40, 60))
             # Set the position of the sprite
             self.rect = self.image.get_rect()
-        # else:
-            # print("unlocking...")
 
     def update(self):
         if self.ready:
+            # constantly follow player, never gets unequipped
             self.rect.x = self.game.player.rect.x
             self.rect.y = self.game.player.rect.y
-
 
 class BuffedEnemy(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.buffed_enemies
         Sprite.__init__(self, self.groups)
         self.game = game # allows player to interact and access everything in game class, used in main.py
-        self.image = pg.image.load("boss.png").convert_alpha()  # retains transparent bg features
-        self.image = pg.transform.scale(self.image, (40, 60))
+        self.image = pg.image.load("./static/boss.png").convert_alpha()  # retains transparent bg features
+        self.image = pg.transform.scale(self.image, (60, 80))
         # Set the position of the sprite
         self.rect = self.image.get_rect()
         self.rect.x = x * TILESIZE
@@ -501,8 +463,10 @@ class BuffedEnemy(Sprite):
         self.x  = x * TILESIZE
         self.y = y * TILESIZE
         self.vx, self.vy = ENEMY_SPEED, 0
-        self.lives = 100
+        # more hitpoints than lvl 1 static
+        self.lives = 1000
 
+    # same collision logic as lvl 1 statics
     def collide_with_walls(self):
         hits = pg.sprite.spritecollide(self, self.game.walls, False)
         if hits:
