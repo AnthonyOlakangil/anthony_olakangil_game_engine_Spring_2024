@@ -128,7 +128,7 @@ class Game:
 
     def stage_2(self):
         # load new level map
-        self.load_data('map2.txt')
+        self.load_data('./maps/map2.txt')
         self.new()  
 
     def show_new_screen(self):
@@ -199,7 +199,7 @@ class Game:
                 if self.player.moneybag >= 30:
                     self.show_finish_screen()
                     # allow player to play again from level 1
-                    self.load_data('map.txt')
+                    self.load_data('./maps/map.txt')
                     self.new()
                     self.run()
                 if self.player.dead:
@@ -262,7 +262,7 @@ class Game:
             self.buffed_enemy_count = 0
             self.player.moneybag = 0
             # restart from lvl 1
-            self.load_data('map.txt')
+            self.load_data('./maps/map.txt')
             self.new()
             self.run()
 
