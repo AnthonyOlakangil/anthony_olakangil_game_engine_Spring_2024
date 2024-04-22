@@ -17,12 +17,13 @@ class Spritesheet:
     # utility class for loading and parsing spritesheets
     def __init__(self, filename):
         self.spritesheet = pg.image.load(filename).convert()
+
     def get_image(self, x, y, width, height):
         # grab an image out of a larger spritesheet
         image = pg.Surface((width, height))
         image.blit(self.spritesheet, (0, 0), (x, y, width, height))
         # image = pg.transform.scale(image, (width, height))
-        image = pg.transform.scale(image, (width * 4, height * 4))
+        # image = pg.transform.scale(image, (width * 4, height * 4))
         return image
     
 # Create a player class
@@ -71,6 +72,7 @@ class Player(Sprite):
         if not self.jumping and not self.walking:
             if now - self.last_update > 500:
                 self.last_update = now
+                # seamless looping (adding 1 would make 2 % 2 = 0, switching the frame back to the 0th standing frame)
                 self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
                 bottom = self.rect.bottom
                 self.image = self.standing_frames[self.current_frame]

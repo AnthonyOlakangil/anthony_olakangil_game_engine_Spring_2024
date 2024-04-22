@@ -13,7 +13,15 @@ Game design goals:
 9. respawn option if gameover (done)
 10. sound (done)
 11. spawn in buffed enemies in unbeatable stage (done)
+
+BETA GOAL:
+
+improve movement 
+    panning
+    camera moving with character
+    not seeing entire map at once
 '''
+
 # import necessary modules and libraries 
 import pygame as pg 
 import sys
