@@ -269,6 +269,7 @@ class Enemy(Sprite):
         self.rect.y = self.y
         self.x  = x * TILESIZE
         self.y = y * TILESIZE
+        self.lives = 1
         # only move back and forth (x direction)
         self.vx, self.vy = ENEMY_SPEED, 0
 

@@ -16,7 +16,7 @@ Game design goals:
 
 BETA GOAL:
 
-improve movement 
+improve movement                    
     panning
     camera moving with character
     not seeing entire map at once
@@ -27,8 +27,10 @@ import pygame as pg
 import sys
 from random import randint
 from os import path
+from pygame.sprite import Group
 from settings import *
 from sprites import *
+from camera import *
 
 # Create the Game class
 
@@ -111,12 +113,14 @@ class Game:
         self.boss_group = pg.sprite.Group()
         self.swords = pg.sprite.Group()
         self.buffed_enemies = pg.sprite.Group()
+        self.cameras = pg.sprite.Group
         for row, tiles in enumerate(self.map_data): # enumerate - creates tuples of 2 elements, tuple[0] being the index and tuple[1] being the actual element
             for col, tile in enumerate(tiles):
                 if tile == '1':
                     Wall(self, col, row) # create walls where there is a 1
                 if tile == 'P':
                     self.player = Player(self, col, row) # initialize player wherever letter P is located on txt file
+                    self.camera = CameraGroup(self)
                 if tile == 'E':
                     Enemy(self, col, row)
                     self.enemy_count += 1 # track how many enemies the game starts with
@@ -242,7 +246,8 @@ class Game:
     def draw(self):
         self.screen.fill(BGCOLOR)
         self.draw_grid()
-        self.all_sprites.draw(self.screen)
+        self.camera.update()
+        self.camera.custom_draw(self.player)
         # if all static enemies are dead, draw the teleporter
         if self.enemy_count == 0 and self.buffed_enemy_count == 0:
             for row, tiles in enumerate(self.map_data): # function - creates tuples of 2 elements, tuple[0] being the index and tuple[1] being the actual element
@@ -271,7 +276,7 @@ class Game:
             self.player.moneybag = 0
             # restart from lvl 1
             self.load_data('./maps/map.txt')
-            self.new()
+            self.new() 
             self.run()
 
 # instantiating the Game class
