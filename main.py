@@ -43,7 +43,7 @@ class Game:
         self.clock = pg.time.Clock()
         pg.key.set_repeat(500, 100)
         # access dir with ./
-        self.load_data('./maps/map.txt')
+        self.load_data('./maps/map3.txt')
         self.running = True
         # initialize counters
         self.enemy_count = 0
@@ -211,7 +211,7 @@ class Game:
                 if self.player.moneybag >= 30:
                     self.show_finish_screen()
                     # allow player to play again from level 1
-                    self.load_data('./maps/map.txt')
+                    self.load_data('./maps/map3.txt')
                     self.new()
                     self.run()
                 if self.player.dead:
@@ -275,7 +275,7 @@ class Game:
             self.buffed_enemy_count = 0
             self.player.moneybag = 0
             # restart from lvl 1
-            self.load_data('./maps/map.txt')
+            self.load_data('./maps/map3.txt')
             self.new() 
             self.run()
 
