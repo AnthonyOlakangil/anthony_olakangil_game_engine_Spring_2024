@@ -208,6 +208,12 @@ class Player(Sprite):
                 # self.game.big_sword.follow_player()
                 self.weapon_big = True
                 return True
+            if str(hits[0].__class__.__name__) == "Magnet":
+                print('hit')
+                self.game.magnet.follow_player()
+                for coin in self.game.coins:
+                    coin.follow_player(self.game.player)
+                
 
     def update(self):
         self.animate()
@@ -223,6 +229,7 @@ class Player(Sprite):
         self.collide_with_group(self.game.teleporters, False)
         self.collide_with_group([self.game.big_sword], False) # make it an iterable to avoid error
         self.collide_with_group(self.game.powerups, True)
+        self.collide_with_group(self.game.magnet, False)
         if self.speed > 1 and time.time() - self.powerup_time >= 3: # powerup wears off after 3 seconds
             self.speed = 1
         self.collide_with_group(self.game.swords, False)
@@ -300,6 +307,27 @@ class Coin(pg.sprite.Sprite):
         self.y = y
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
+        self.vx, self.vy = 0, 0
+
+    def follow_player(self, player):
+        # Calculate the direction towards the player (forming a vector which represents 
+        # distance from coin to player sprite)
+        dx = player.rect.centerx - self.rect.centerx
+        dy = player.rect.centery - self.rect.centery
+
+        # Calculate magnitude of this vector
+        self.distance = math.hypot(dx, dy)
+
+        if self.distance == 0:
+            pass
+        
+        # vector / magnitude = 1, scaling it down but keeping same direction 
+        # allows for constant speed
+        dx /= self.distance
+        dy /= self.distance
+        # Set the constant speed
+        self.vx = dx * MAGNET_ATTRACTION
+        self.vy = dy * MAGNET_ATTRACTION
 
 class Powerup(pg.sprite.Sprite):
     def __init__(self, game, x, y):
@@ -535,3 +563,20 @@ class BuffedEnemy(Sprite):
         self.rect.x = self.x
         self.collide_with_walls()
         self.rect.y = self.y
+
+class Magnet(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.magnets
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.image.load("./static/Magnet.webp").convert_alpha()
+        self.image = pg.transform.scale(self.image, (40, 40)) # scale it down
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+
+    def follow_player(self):
+        self.rect.x = self.game.player.rect.x
+        self.rect.y = self.game.player.rect.y

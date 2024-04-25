@@ -15,8 +15,8 @@ Game design goals:
 11. spawn in buffed enemies in unbeatable stage (done)
 
 BETA GOAL:
-
-improve movement                    
+    (done)
+    improve movement                    
     panning
     camera moving with character
     not seeing entire map at once
@@ -114,6 +114,7 @@ class Game:
         self.swords = pg.sprite.Group()
         self.buffed_enemies = pg.sprite.Group()
         self.cameras = pg.sprite.Group
+        self.magnets = pg.sprite.Group()
         for row, tiles in enumerate(self.map_data): # enumerate - creates tuples of 2 elements, tuple[0] being the index and tuple[1] being the actual element
             for col, tile in enumerate(tiles):
                 if tile == '1':
@@ -125,7 +126,8 @@ class Game:
                     Enemy(self, col, row)
                     self.enemy_count += 1 # track how many enemies the game starts with
                 if tile == 'C':
-                    Coin(self, col, row)
+                    self.coin = Coin(self, col, row)
+                    # print(len(coins_list))
                 if tile == 'Q':
                     Powerup(self, col, row)
                 if tile == 'B':
@@ -137,6 +139,8 @@ class Game:
                 if tile == 'G':
                     BuffedEnemy(self, col, row)
                     self.buffed_enemy_count += 1 # count how many buffed enemies the game starts with
+                if tile == 'M':
+                    self.magnet = Magnet(self, col, row)
 
     def stage_2(self):
         # load new level map
