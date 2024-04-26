@@ -52,6 +52,7 @@ class Player(Sprite):
         self.dead = False
         # self.unlock_time = 0
         self.check_if_collided_once = 0
+        self.magnet = False
 
     def load_images(self):
         self.standing_frames = [self.spritesheet.get_image(0, 0, 32, 32),
@@ -209,7 +210,11 @@ class Player(Sprite):
                 self.weapon_big = True
                 return True
             if str(hits[0].__class__.__name__) == "Magnet":
-                print('hit')
+                # print('hit')
+                print(self.magnet)
+                self.magnet = True
+                # print("set to TRUE")
+                # print(self.game.magnet.magnet)
                 self.game.magnet.follow_player()
                 for coin in self.game.coins:
                     coin.follow_player(self.game.player)
@@ -229,7 +234,7 @@ class Player(Sprite):
         self.collide_with_group(self.game.teleporters, False)
         self.collide_with_group([self.game.big_sword], False) # make it an iterable to avoid error
         self.collide_with_group(self.game.powerups, True)
-        self.collide_with_group(self.game.magnet, False)
+        self.collide_with_group(self.game.magnets, False)
         if self.speed > 1 and time.time() - self.powerup_time >= 3: # powerup wears off after 3 seconds
             self.speed = 1
         self.collide_with_group(self.game.swords, False)
@@ -308,6 +313,7 @@ class Coin(pg.sprite.Sprite):
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
         self.vx, self.vy = 0, 0
+        # self.magnet = False
 
     def follow_player(self, player):
         # Calculate the direction towards the player (forming a vector which represents 
@@ -328,6 +334,17 @@ class Coin(pg.sprite.Sprite):
         # Set the constant speed
         self.vx = dx * MAGNET_ATTRACTION
         self.vy = dy * MAGNET_ATTRACTION
+
+    def update(self):
+        print("checking...")
+        if self.game.player.magnet:
+            self.x += self.vx * self.game.dt 
+            # d = rt, so move player to x pos based on rate and how long it took to get there
+            self.y += self.vy * self.game.dt
+            self.rect.x = self.x
+            self.follow_player(self.game.player)
+            # don't check for collision in y dir
+            self.rect.y = self.y
 
 class Powerup(pg.sprite.Sprite):
     def __init__(self, game, x, y):
@@ -374,6 +391,7 @@ class Boss(Sprite):
         # 1 million lives - make it impractical to kill boss without a weapon upgrade
         self.dead = False
         self.lives = 1000000
+
     def follow_player(self, player):
         # Calculate the direction towards the player (forming a vector which represents 
         # distance from boss to player sprite)

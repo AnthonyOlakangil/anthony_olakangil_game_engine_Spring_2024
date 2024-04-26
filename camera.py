@@ -45,6 +45,6 @@ class CameraGroup(pg.sprite.Group):
 
 		self.display_surface.blit(scaled_surf,scaled_rect)
 		
-		pg.draw.rect(self.display_surface, LIGHTGREY, pg.Rect(30, 30, 100, 20))
-		pg.draw.rect(self.display_surface, RED, pg.Rect(30, 30, self.game.player.lives/1000*100, 20))
+		pg.draw.rect(self.display_surface, WHITE, pg.Rect(30, 30, 100, 20))
+		pg.draw.rect(self.display_surface, GREEN, pg.Rect(30, 30, self.game.player.lives/1000*100, 20))
 
