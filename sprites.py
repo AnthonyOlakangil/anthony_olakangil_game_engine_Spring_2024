@@ -52,7 +52,10 @@ class Player(Sprite):
         self.dead = False
         # self.unlock_time = 0
         self.check_if_collided_once = 0
+        # probably need a better variable name
+        self.collided_once2 = 0
         self.magnet = False
+        self.magnet_time = 0
 
     def load_images(self):
         self.standing_frames = [self.spritesheet.get_image(0, 0, 32, 32),
@@ -211,13 +214,18 @@ class Player(Sprite):
                 return True
             if str(hits[0].__class__.__name__) == "Magnet":
                 # print('hit')
-                print(self.magnet)
                 self.magnet = True
-                # print("set to TRUE")
-                # print(self.game.magnet.magnet)
+                # only start counting once, after the first collision
+                self.collided_once2 += 1
+                # constantly check if 5 seconds has passed
+                self.game.magnet.unequip()
                 self.game.magnet.follow_player()
+                # iterate through all sprites in coins group to do the same thing  
                 for coin in self.game.coins:
-                    coin.follow_player(self.game.player)
+                    if not self.game.magnet.alive():  # Check if magnet is still alive
+                        coin.vx, coin.vy = 0, 0
+                        break  # Exit the loop if magnet is dead
+                    coin.following = True
                 
 
     def update(self):
@@ -235,14 +243,18 @@ class Player(Sprite):
         self.collide_with_group([self.game.big_sword], False) # make it an iterable to avoid error
         self.collide_with_group(self.game.powerups, True)
         self.collide_with_group(self.game.magnets, False)
+
         if self.speed > 1 and time.time() - self.powerup_time >= 3: # powerup wears off after 3 seconds
             self.speed = 1
+
         self.collide_with_group(self.game.swords, False)
+
         if self.collide_with_enemies(False): # False: don't kill player sprite until health is equal to 0
             if self.lives == 0:
                 self.kill()
                 self.dead = True
                 print('you died')
+
         if self.collide_with_buffed_enemies(False):
             if self.lives == 0:
                 self.kill()
@@ -313,8 +325,12 @@ class Coin(pg.sprite.Sprite):
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
         self.vx, self.vy = 0, 0
-        # self.magnet = False
+        self.following = False
 
+    # getter
+    def get_pos(self):
+        return (self.rect.x, self.rect.y)
+    
     def follow_player(self, player):
         # Calculate the direction towards the player (forming a vector which represents 
         # distance from coin to player sprite)
@@ -335,16 +351,43 @@ class Coin(pg.sprite.Sprite):
         self.vx = dx * MAGNET_ATTRACTION
         self.vy = dy * MAGNET_ATTRACTION
 
+    def collide_with_walls(self, dir):
+        if dir == 'x':
+            hits = pg.sprite.spritecollide(self, self.game.walls, False)
+            if hits:
+                if self.vx > 0:
+                    self.x = hits[0].rect.left - self.rect.width
+                    self.vx = 0
+                if self.vx < 0:
+                    self.x = hits[0].rect.right
+                self.vx = 0
+                self.rect.x = self.x
+        if dir == 'y':
+            hits = pg.sprite.spritecollide(self, self.game.walls, False)
+            if hits:
+                if self.vy > 0:
+                    self.y = hits[0].rect.left - self.rect.width
+                    self.vy = 0
+                if self.vy < 0:
+                    self.y = hits[0].rect.right
+                self.vy = 0
+                self.rect.y = self.y
+
     def update(self):
-        print("checking...")
-        if self.game.player.magnet:
-            self.x += self.vx * self.game.dt 
-            # d = rt, so move player to x pos based on rate and how long it took to get there
-            self.y += self.vy * self.game.dt
-            self.rect.x = self.x
+        # constantly force resetting pos to deal with 0,0 respawn bug
+        self.x = self.get_pos()[0]
+        self.y = self.get_pos()[1]
+        self.x += self.vx * self.game.dt 
+        # d = rt, so move player to x pos based on rate and how long it took to get there
+        self.y += self.vy * self.game.dt
+        self.rect.x = self.x
+        self.collide_with_walls('x')
+        self.rect.y = self.y
+        self.collide_with_walls('y')
+        if self.following:
+            # print(self.following)
             self.follow_player(self.game.player)
-            # don't check for collision in y dir
-            self.rect.y = self.y
+      
 
 class Powerup(pg.sprite.Sprite):
     def __init__(self, game, x, y):
@@ -596,5 +639,20 @@ class Magnet(Sprite):
         self.rect.y = y * TILESIZE
 
     def follow_player(self):
+        # same logic as sword classes 
         self.rect.x = self.game.player.rect.x
         self.rect.y = self.game.player.rect.y
+
+
+    def unequip(self):
+        # player is only given 5 seconds to use the magnet
+        # counting starts after the first collision
+        if self.game.player.collided_once2 == 1:
+            self.game.player.magnet_time = time.time()
+            
+        if time.time() - self.game.player.magnet_time >= 5:
+            for coin in self.game.coins:
+                coin.following = False
+                print(coin.following)
+            self.game.magnet.kill()
+            print("magnet cooldown initiated!")

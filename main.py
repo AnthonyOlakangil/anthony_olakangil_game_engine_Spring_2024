@@ -126,7 +126,7 @@ class Game:
                     Enemy(self, col, row)
                     self.enemy_count += 1 # track how many enemies the game starts with
                 if tile == 'C':
-                    self.coin = Coin(self, col, row)
+                    Coin(self, col, row)
                     # print(len(coins_list))
                 if tile == 'Q':
                     Powerup(self, col, row)
