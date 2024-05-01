@@ -653,6 +653,6 @@ class Magnet(Sprite):
         if time.time() - self.game.player.magnet_time >= 5:
             for coin in self.game.coins:
                 coin.following = False
-                print(coin.following)
+                # print(coin.following)
             self.game.magnet.kill()
             print("magnet cooldown initiated!")
