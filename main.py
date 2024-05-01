@@ -1,4 +1,4 @@
-# This file was created by: Anthony Olakangil with music debug from Aayush Sharma
+# This file was created by: Anthony Olakangil with music debug and scrolling map from Aayush Sharma
 
 '''
 Game design goals:

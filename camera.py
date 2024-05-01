@@ -2,6 +2,7 @@ import pygame as pg
 from pygame import Vector2
 from settings import *
 
+# Adapted from Aayush Sharma
 class CameraGroup(pg.sprite.Group):
 	def __init__(self, game):
 		super().__init__()
@@ -35,6 +36,10 @@ class CameraGroup(pg.sprite.Group):
 
 		# active elements
 		for sprite in self.game.all_sprites.sprites():
+			offset_pos = sprite.rect.topleft - self.offset + self.internal_offset
+			self.internal_surf.blit(sprite.image, offset_pos)
+			
+		for sprite in self.game.teleporters.sprites():
 			offset_pos = sprite.rect.topleft - self.offset + self.internal_offset
 			self.internal_surf.blit(sprite.image, offset_pos)
 		
