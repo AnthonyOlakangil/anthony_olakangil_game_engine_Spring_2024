@@ -215,10 +215,10 @@ class Player(Sprite):
             if str(hits[0].__class__.__name__) == "Magnet":
                 # print('hit')
                 self.magnet = True
+                # only start counting once, after the first collision
                 self.collided_once2 += 1
+                # constantly check if 5 seconds has passed
                 self.game.magnet.unequip()
-                # print("set to TRUE")
-                # print(self.game.magnet.magnet)
                 self.game.magnet.follow_player()
                 # iterate through all sprites in coins group to do the same thing  
                 for coin in self.game.coins:
@@ -374,16 +374,20 @@ class Coin(pg.sprite.Sprite):
                 self.rect.y = self.y
 
     def update(self):
-        # print("checking...")
-        if self.game.player.magnet:
-            self.x += self.vx * self.game.dt 
-            # d = rt, so move player to x pos based on rate and how long it took to get there
-            self.y += self.vy * self.game.dt
-            self.rect.x = self.x
+        # constantly force resetting pos to deal with 0,0 respawn bug
+        self.x = self.get_pos()[0]
+        self.y = self.get_pos()[1]
+        self.x += self.vx * self.game.dt 
+        # d = rt, so move player to x pos based on rate and how long it took to get there
+        self.y += self.vy * self.game.dt
+        self.rect.x = self.x
+        self.collide_with_walls('x')
+        self.rect.y = self.y
+        self.collide_with_walls('y')
+        if self.following:
+            # print(self.following)
             self.follow_player(self.game.player)
-            self.rect.y = self.y
-            self.collide_with_walls('x')
-            self.collide_with_walls('y')
+      
 
 class Powerup(pg.sprite.Sprite):
     def __init__(self, game, x, y):
@@ -639,10 +643,16 @@ class Magnet(Sprite):
         self.rect.x = self.game.player.rect.x
         self.rect.y = self.game.player.rect.y
 
+
     def unequip(self):
+        # player is only given 5 seconds to use the magnet
+        # counting starts after the first collision
         if self.game.player.collided_once2 == 1:
             self.game.player.magnet_time = time.time()
+            
         if time.time() - self.game.player.magnet_time >= 5:
-            print(self.game.player.magnet_time)
-            self.game.player.magnet = False
+            for coin in self.game.coins:
+                coin.following = False
+                print(coin.following)
             self.game.magnet.kill()
+            print("magnet cooldown initiated!")
