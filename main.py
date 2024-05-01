@@ -15,11 +15,17 @@ Game design goals:
 11. spawn in buffed enemies in unbeatable stage (done)
 
 BETA GOAL:
-    (done)
+    (TODO)
     improve movement                    
     panning
     camera moving with character
     not seeing entire map at once
+
+    (TODO)
+    magnet powerup
+    attracts all coins
+    lasts 5 seconds
+
 '''
 
 # import necessary modules and libraries 
