@@ -269,7 +269,7 @@ class Game:
                 for col, tile in enumerate(tiles):
                     if tile == 'T':
                         self.teleporter = Teleporter(self, col, row)
-                        self.teleporters.draw(self.screen)
+                        # self.teleporters.draw(self.screen)
 
         # display health/money near top corners                
         self.draw_text(str(self.player.lives), "arial", 50, WHITE, 50, 25)

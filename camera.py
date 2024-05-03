@@ -26,6 +26,7 @@ class CameraGroup(pg.sprite.Group):
 		self.internal_offset.y = self.internal_surf_size[1] // 2 - self.half_h
 
 	def center_target_camera(self,target):
+		# centering on player
 		self.offset.x = target.rect.centerx - self.half_w
 		self.offset.y = target.rect.centery - self.half_h
 
@@ -50,6 +51,7 @@ class CameraGroup(pg.sprite.Group):
 
 		self.display_surface.blit(scaled_surf,scaled_rect)
 		
+		# health bar
 		pg.draw.rect(self.display_surface, WHITE, pg.Rect(30, 30, 100, 20))
 		pg.draw.rect(self.display_surface, GREEN, pg.Rect(30, 30, self.game.player.lives/1000*100, 20))
 
