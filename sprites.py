@@ -56,6 +56,9 @@ class Player(Sprite):
         self.collided_once2 = 0
         self.magnet = False
         self.magnet_time = 0
+        # jump vars
+        self.is_jumping = True
+        self.is_falling = False
 
     def load_images(self):
         self.standing_frames = [self.spritesheet.get_image(0, 0, 32, 32),
@@ -226,11 +229,18 @@ class Player(Sprite):
                         coin.vx, coin.vy = 0, 0
                         break  # Exit the loop if magnet is dead
                     coin.following = True
+
+    def gravity(self):
+        if self.is_jumping:
+            self.vy = PLAYER_SPEED * self.speed
+            print(self.vy)
+            self.rect.y
                 
 
     def update(self):
         self.animate()
         self.get_keys()
+        self.gravity()
         self.x += self.vx * self.game.dt 
         # d = rt, so move player to pos based on rate and how long it takes to get there (based on FPS)
         self.y += self.vy * self.game.dt
