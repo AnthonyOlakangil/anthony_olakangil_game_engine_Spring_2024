@@ -57,8 +57,8 @@ class Player(Sprite):
         self.magnet = False
         self.magnet_time = 0
         # jump vars
-        self.is_jumping = True
-        self.is_falling = False
+        self.is_jumping = False
+        # self.is_falling = True
 
     def load_images(self):
         self.standing_frames = [self.spritesheet.get_image(0, 0, 32, 32),
@@ -99,10 +99,13 @@ class Player(Sprite):
             self.vx = -PLAYER_SPEED * self.speed
         if keys[pg.K_RIGHT] or keys[pg.K_d]:
             self.vx = PLAYER_SPEED * self.speed
-        if keys[pg.K_UP] or keys[pg.K_w]:
-            self.vy = -PLAYER_SPEED * self.speed
+        # if keys[pg.K_UP] or keys[pg.K_w]:
+        #     self.vy = -PLAYER_SPEED * self.speed
         if keys[pg.K_DOWN] or keys[pg.K_s]:
             self.vy = PLAYER_SPEED * self.speed
+        if keys[pg.K_SPACE]:
+            self.is_jumping = True
+            self.gravity()
         # make movement more free; not tile based
         if self.vx != 0 and self.vy != 0:
             self.vx *= math.sqrt(2)/2
@@ -231,23 +234,32 @@ class Player(Sprite):
                     coin.following = True
 
     def gravity(self):
-        if self.is_jumping:
+        if not self.is_jumping:
             self.vy = PLAYER_SPEED * self.speed
-            print(self.vy)
-            self.rect.y
-                
+            # self.collide_with_walls('y')
+            # self.is_falling = False
+            # print(self.vy)
+            # self.rect.y
+        else:
+            self.y -= 35
+            self.is_jumping = False
+
+
+
+              
 
     def update(self):
         self.animate()
         self.get_keys()
         self.gravity()
+        # self.jump()
+        self.rect.y = self.y
+        self.collide_with_walls('y')
         self.x += self.vx * self.game.dt 
         # d = rt, so move player to pos based on rate and how long it takes to get there (based on FPS)
         self.y += self.vy * self.game.dt
         self.rect.x = self.x
         self.collide_with_walls('x')
-        self.rect.y = self.y
-        self.collide_with_walls('y')
         self.collide_with_group(self.game.coins, True)
         self.collide_with_group(self.game.teleporters, False)
         self.collide_with_group([self.game.big_sword], False) # make it an iterable to avoid error
