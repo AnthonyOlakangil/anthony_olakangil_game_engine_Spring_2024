@@ -242,7 +242,7 @@ class Game:
         
     def update(self):
         self.all_sprites.update()
-        self.teleporters # update it separately because it is drawn separately
+        self.teleporters.update() # update it separately because it is drawn separately
 
     def draw_grid(self):
         for x in range(0, WIDTH, TILESIZE): 

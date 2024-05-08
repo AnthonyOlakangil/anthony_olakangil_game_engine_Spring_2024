@@ -58,7 +58,12 @@ class Player(Sprite):
         self.magnet_time = 0
         # jump vars
         self.is_jumping = False
+        self.jumped = False
+        self.temp = 0
         # self.is_falling = True
+        self.can_jump = True
+        self.jump_cooldown = 1
+        self.jump_duration = 0.5
 
     def load_images(self):
         self.standing_frames = [self.spritesheet.get_image(0, 0, 32, 32),
@@ -103,9 +108,16 @@ class Player(Sprite):
         #     self.vy = -PLAYER_SPEED * self.speed
         if keys[pg.K_DOWN] or keys[pg.K_s]:
             self.vy = PLAYER_SPEED * self.speed
-        if keys[pg.K_SPACE]:
+        if keys[pg.K_SPACE] and self.can_jump: # cooldown variable
+            self.can_jump = False
             self.is_jumping = True
-            self.gravity()
+            # self.gravity()
+                # self.temp = time.time()
+            # else:
+            #     print(self.temp)
+            #     print("you are on a cooldown to jump again!")
+            #     if time.time() - self.temp >= 0.5:
+            #         self.jumped = False
         # make movement more free; not tile based
         if self.vx != 0 and self.vy != 0:
             self.vx *= math.sqrt(2)/2
@@ -130,6 +142,7 @@ class Player(Sprite):
                     self.y = hits[0].rect.bottom # collision from bottom
                 self.vy = 0
                 self.rect.y = self.y
+                return True
 
     def collide_with_enemies(self, kill):
             self.enemy_hit = None
@@ -241,15 +254,23 @@ class Player(Sprite):
             # print(self.vy)
             # self.rect.y
         else:
-            self.y -= 35
-            self.is_jumping = False
+            # self.temp = time.time()
+            # print(self.temp)
+            self.jump_duration -= self.game.dt # every frame, decrement by the time it takes to complete a single frame (will slow down jump movement gradually)
+            self.y -= self.jump_duration * 72 # scale it up so we can jump higher, not by an extremely small float
+            if self.jump_duration <= 0:
+                self.is_jumping = False # let gravity pull player back down
+                self.jump_duration = 0.5 # reset jump duration for next jump
+            # self.jumped = True
 
-
-
-              
 
     def update(self):
         self.animate()
+        if not self.can_jump:
+            self.jump_cooldown -= self.game.dt # same logic as jump_duration
+            if self.jump_cooldown <= 0:
+                self.can_jump = True # allow player to jump again after 1 second (prevents double jumps)
+                self.jump_cooldown = 1 # reset for next jump
         self.get_keys()
         self.gravity()
         # self.jump()
