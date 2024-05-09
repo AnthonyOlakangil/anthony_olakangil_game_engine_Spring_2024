@@ -30,6 +30,7 @@ FINAL GOAL:
     (TODO)
     gravity
     jumping
+    moving platforms
 
 '''
 
@@ -126,6 +127,7 @@ class Game:
         self.buffed_enemies = pg.sprite.Group()
         self.cameras = pg.sprite.Group
         self.magnets = pg.sprite.Group()
+        self.platforms = pg.sprite.Group()
         for row, tiles in enumerate(self.map_data): # enumerate - creates tuples of 2 elements, tuple[0] being the index and tuple[1] being the actual element
             for col, tile in enumerate(tiles):
                 if tile == '1':
@@ -152,6 +154,8 @@ class Game:
                     self.buffed_enemy_count += 1 # count how many buffed enemies the game starts with
                 if tile == 'M':
                     self.magnet = Magnet(self, col, row)
+                if tile == 'Y':
+                    MovingPlatform(self, col, row)
 
     def stage_2(self):
         # load new level map

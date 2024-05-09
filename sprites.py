@@ -143,6 +143,26 @@ class Player(Sprite):
                 self.vy = 0
                 self.rect.y = self.y
                 return True
+    def collide_with_platforms(self, dir):
+        if dir == 'x':
+            hits = pg.sprite.spritecollide(self, self.game.platforms, False)
+            if hits:
+                if self.vx > 0: # collision from the left
+                    self.x = hits[0].rect.left - self.rect.width
+                if self.vx < 0:
+                    self.x = hits[0].rect.right # collision from the right
+                self.vx = 0
+                self.rect.x = self.x
+        if dir == 'y':
+            hits = pg.sprite.spritecollide(self, self.game.platforms, False)
+            if hits:
+                if self.vy > 0:
+                    self.y = hits[0].rect.top - self.rect.width # collision from top
+                if self.vy < 0:
+                    self.y = hits[0].rect.bottom # collision from bottom
+                self.vy = 0
+                self.rect.y = self.y
+                return True
 
     def collide_with_enemies(self, kill):
             self.enemy_hit = None
@@ -257,7 +277,7 @@ class Player(Sprite):
             # self.temp = time.time()
             # print(self.temp)
             self.jump_duration -= self.game.dt # every frame, decrement by the time it takes to complete a single frame (will slow down jump movement gradually)
-            self.y -= self.jump_duration * 72 # scale it up so we can jump higher, not by an extremely small float
+            self.y -= self.jump_duration * 40 # scale it up so we can jump higher, not by an extremely small float
             if self.jump_duration <= 0:
                 self.is_jumping = False # let gravity pull player back down
                 self.jump_duration = 0.5 # reset jump duration for next jump
@@ -276,11 +296,15 @@ class Player(Sprite):
         # self.jump()
         self.rect.y = self.y
         self.collide_with_walls('y')
+        self.rect.y = self.y
+        self.collide_with_platforms('y')
         self.x += self.vx * self.game.dt 
         # d = rt, so move player to pos based on rate and how long it takes to get there (based on FPS)
         self.y += self.vy * self.game.dt
         self.rect.x = self.x
         self.collide_with_walls('x')
+        self.rect.x = self.x
+        self.collide_with_platforms('x')
         self.collide_with_group(self.game.coins, True)
         self.collide_with_group(self.game.teleporters, False)
         self.collide_with_group([self.game.big_sword], False) # make it an iterable to avoid error
@@ -625,12 +649,16 @@ class Excalibur(Sprite):
             self.image = pg.transform.scale(self.image, (40, 60))
             # Set the position of the sprite
             self.rect = self.image.get_rect()
+    
+    def get_pos(self):
+        return (self.game.player.rect.x, self.game.player.rect.y)
 
     def update(self):
         if self.ready:
+            print('ready')
             # constantly follow player, never gets unequipped
-            self.rect.x = self.game.player.rect.x
-            self.rect.y = self.game.player.rect.y
+            self.rect.x = self.get_pos()[0]
+            self.rect.y = self.get_pos()[1]
 
 class BuffedEnemy(Sprite):
     def __init__(self, game, x, y):
@@ -693,9 +721,43 @@ class Magnet(Sprite):
         if self.game.player.collided_once2 == 1:
             self.game.player.magnet_time = time.time()
             
-        if time.time() - self.game.player.magnet_time >= 5:
+        if time.time() - self.game.player.magnet_time >= 5: # 5 second check
             for coin in self.game.coins:
                 coin.following = False
                 # print(coin.following)
             self.game.magnet.kill()
             print("magnet cooldown initiated!")
+
+class MovingPlatform(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.platforms
+        Sprite.__init__(self, self.groups)
+        self.game = game # allows player to interact and access everything in game class, used in main.py
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.image.fill(LIGHTGREY)
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.x = self.x
+        self.rect.y = self.y
+        self.x  = x * TILESIZE
+        self.y = y * TILESIZE
+        # self.lives = 1
+        # only move back and forth (x direction)
+        self.vx, self.vy = ENEMY_SPEED, 0
+
+    def collide_with_walls(self):
+            hits = pg.sprite.spritecollide(self, self.game.walls, False)
+            if hits:
+                # go back and forth 
+                self.vx *= -1
+                self.rect.x = self.x
+
+    def update(self):
+        self.x += self.vx * self.game.dt 
+        # d = rt, so move player to x pos based on rate and how long it took to get there
+        self.y += self.vy * self.game.dt
+        self.rect.x = self.x
+        self.collide_with_walls()
+        self.rect.y = self.y
+
