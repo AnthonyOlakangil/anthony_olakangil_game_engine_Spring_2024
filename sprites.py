@@ -655,10 +655,13 @@ class Excalibur(Sprite):
 
     def update(self):
         if self.ready:
-            print('ready')
+            # print('ready')
             # constantly follow player, never gets unequipped
             self.rect.x = self.get_pos()[0]
             self.rect.y = self.get_pos()[1]
+            # print(self.rect.x, self.rect.y)
+            self.x = self.rect.x
+            self.y = self.rect.y
 
 class BuffedEnemy(Sprite):
     def __init__(self, game, x, y):
