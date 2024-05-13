@@ -512,7 +512,8 @@ class Boss(Sprite):
         self.distance = math.hypot(dx, dy)
 
         if self.distance == 0:
-            raise Exception("you are too close to the boss!") # end game logically instead of DivideByZeroError
+            # raise Exception("you are too close to the boss!") # end game logically instead of DivideByZeroError
+            pass
         
         # vector / magnitude = 1, scaling it down but keeping same direction 
         # allows for constant speed
@@ -603,6 +604,8 @@ class Basic_sword(Sprite):
         if self.game.player.weapon_basic == False:
             self.relocate()
     
+    # Adapted from ChatGPT
+
     def relocate(self):
         # Loop until a valid position is found
         while True:
@@ -610,7 +613,6 @@ class Basic_sword(Sprite):
             # subtract 1 bc/o indexing
             randx = rand.randint(0, len(self.game.map_data) - 1)
             randy = rand.randint(0, len(self.game.map_data) - 1)
-
             # Check if the chosen position is empty (no wall or other object)
             if self.game.map_data[randx][randy] == '.':
                 print(self.game.map_data[randx][randy])
@@ -628,6 +630,8 @@ class Excalibur(Sprite):
         self.image = pg.image.load("./static/chest.png").convert_alpha()
         self.image = pg.transform.scale(self.image, (40, 60))
         self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
         self.ready = False
@@ -656,12 +660,16 @@ class Excalibur(Sprite):
     def update(self):
         if self.ready:
             # print('ready')
+            # print(self.x, self.rect.x, self.y, self.rect.y)
             # constantly follow player, never gets unequipped
-            self.rect.x = self.get_pos()[0]
-            self.rect.y = self.get_pos()[1]
+            # self.rect.x = self.get_pos()[0]
+            # self.rect.y = self.get_pos()[1]
+            self.x = self.get_pos()[0]
+            self.y = self.get_pos()[1]
+            self.rect.x = self.x
+            self.rect.y = self.y
             # print(self.rect.x, self.rect.y)
-            self.x = self.rect.x
-            self.y = self.rect.y
+            # print(self.x, self.y)
 
 class BuffedEnemy(Sprite):
     def __init__(self, game, x, y):

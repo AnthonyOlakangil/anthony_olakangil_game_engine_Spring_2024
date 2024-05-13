@@ -27,10 +27,10 @@ BETA GOAL:
     lasts 5 seconds
 
 FINAL GOAL:
-    (TODO)
+    (TODO)6
     gravity
     jumping
-    moving platforms
+    moving platforms 
 
 '''
 
