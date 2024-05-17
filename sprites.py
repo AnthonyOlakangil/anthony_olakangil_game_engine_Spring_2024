@@ -138,8 +138,9 @@ class Player(Sprite):
             if hits:
                 if self.vy > 0:
                     self.y = hits[0].rect.top - self.rect.width # collision from top
-                if self.vy < 0:
-                    self.y = hits[0].rect.bottom # collision from bottom
+                # print(self.vy)
+                if self.vy <= 0:
+                    self.y = hits[0].rect.bottom + 15 # collision from bottom
                 self.vy = 0
                 self.rect.y = self.y
                 return True
@@ -278,7 +279,7 @@ class Player(Sprite):
             # print(self.temp)
             self.jump_duration -= self.game.dt # every frame, decrement by the time it takes to complete a single frame (will slow down jump movement gradually)
             self.y -= self.jump_duration * 40 # scale it up so we can jump higher, not by an extremely small float
-            if self.jump_duration <= 0:
+            if self.jump_duration <= 0 or self.collide_with_walls('y'):
                 self.is_jumping = False # let gravity pull player back down
                 self.jump_duration = 0.5 # reset jump duration for next jump
             # self.jumped = True
@@ -512,8 +513,8 @@ class Boss(Sprite):
         self.distance = math.hypot(dx, dy)
 
         if self.distance == 0:
-            # raise Exception("you are too close to the boss!") # end game logically instead of DivideByZeroError
-            pass
+            raise Exception("you are too close to the boss!") # end game logically instead of DivideByZeroError
+            
         
         # vector / magnitude = 1, scaling it down but keeping same direction 
         # allows for constant speed
@@ -655,7 +656,7 @@ class Excalibur(Sprite):
             self.rect = self.image.get_rect()
     
     def get_pos(self):
-        return (self.game.player.rect.x, self.game.player.rect.y)
+        return (self.game.player.x, self.game.player.y)
 
     def update(self):
         if self.ready:
@@ -664,8 +665,8 @@ class Excalibur(Sprite):
             # constantly follow player, never gets unequipped
             # self.rect.x = self.get_pos()[0]
             # self.rect.y = self.get_pos()[1]
-            self.x = self.get_pos()[0]
-            self.y = self.get_pos()[1]
+            self.x = self.game.player.x
+            self.y = self.game.player.y
             self.rect.x = self.x
             self.rect.y = self.y
             # print(self.rect.x, self.rect.y)
@@ -771,4 +772,3 @@ class MovingPlatform(Sprite):
         self.rect.x = self.x
         self.collide_with_walls()
         self.rect.y = self.y
-

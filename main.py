@@ -4,7 +4,7 @@
 Game design goals:
 1. start screen/objective screen (done)
 2. weapon (done)
-3. enemies (done)
+3. enemies (done)w
 4. boss (done)
 5. coins (done)
 6. speed powerup (done)
@@ -17,7 +17,7 @@ Game design goals:
 BETA GOAL:
     (done)
     improve movement                    
-    panning
+    panningw
     camera moving with character
     not seeing entire map at once
 
@@ -27,7 +27,7 @@ BETA GOAL:
     lasts 5 seconds
 
 FINAL GOAL:
-    (TODO)6
+    (TODO)
     gravity
     jumping
     moving platforms 
