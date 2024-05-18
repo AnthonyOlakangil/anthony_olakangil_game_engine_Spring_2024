@@ -1,8 +1,10 @@
+# This file was copied from Aayush Sharma
+
+
 import pygame as pg
 from pygame import Vector2
 from settings import *
 
-# Adapted from Aayush Sharma
 class CameraGroup(pg.sprite.Group):
 	def __init__(self, game):
 		super().__init__()

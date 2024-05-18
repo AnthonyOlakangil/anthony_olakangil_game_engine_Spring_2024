@@ -1,4 +1,4 @@
-# This file was created by: Anthony Olakangil
+# This file was created by: Anthony Olakangil with some methods adapted from ChatGPT and others copied from Cozort
 
 # import necessary modules
 from settings import *
@@ -13,6 +13,7 @@ from os import path
 dir = path.dirname(__file__)
 img_dir = path.join(dir, 'static')
 
+# cozort's
 class Spritesheet:
     # utility class for loading and parsing spritesheets
     def __init__(self, filename):
@@ -22,8 +23,6 @@ class Spritesheet:
         # grab an image out of a larger spritesheet
         image = pg.Surface((width, height))
         image.blit(self.spritesheet, (0, 0), (x, y, width, height))
-        # image = pg.transform.scale(image, (width, height))
-        # image = pg.transform.scale(image, (width * 4, height * 4))
         return image
     
 # Create a player class
@@ -65,6 +64,7 @@ class Player(Sprite):
         self.jump_cooldown = 1
         self.jump_duration = 0.5
 
+    # cozort's
     def load_images(self):
         self.standing_frames = [self.spritesheet.get_image(0, 0, 32, 32),
                                 self.spritesheet.get_image(32, 0, 32, 32)]
@@ -79,6 +79,7 @@ class Player(Sprite):
         self.jump_frame = self.spritesheet.get_image(256, 0, 128, 128)
         self.jump_frame.set_colorkey(BLACK)
 
+    # cozort's
     def animate(self):
         now = pg.time.get_ticks()
         if not self.jumping and not self.walking:
@@ -111,13 +112,6 @@ class Player(Sprite):
         if keys[pg.K_SPACE] and self.can_jump: # cooldown variable
             self.can_jump = False
             self.is_jumping = True
-            # self.gravity()
-                # self.temp = time.time()
-            # else:
-            #     print(self.temp)
-            #     print("you are on a cooldown to jump again!")
-            #     if time.time() - self.temp >= 0.5:
-            #         self.jumped = False
         # make movement more free; not tile based
         if self.vx != 0 and self.vy != 0:
             self.vx *= math.sqrt(2)/2
@@ -138,7 +132,6 @@ class Player(Sprite):
             if hits:
                 if self.vy > 0:
                     self.y = hits[0].rect.top - self.rect.width # collision from top
-                # print(self.vy)
                 if self.vy <= 0:
                     self.y = hits[0].rect.bottom + 15 # collision from bottom
                 self.vy = 0
@@ -266,23 +259,18 @@ class Player(Sprite):
                         coin.vx, coin.vy = 0, 0
                         break  # Exit the loop if magnet is dead
                     coin.following = True
+    
+    # decrementation logic from Aayush Sharma
 
     def gravity(self):
         if not self.is_jumping:
             self.vy = PLAYER_SPEED * self.speed
-            # self.collide_with_walls('y')
-            # self.is_falling = False
-            # print(self.vy)
-            # self.rect.y
         else:
-            # self.temp = time.time()
-            # print(self.temp)
             self.jump_duration -= self.game.dt # every frame, decrement by the time it takes to complete a single frame (will slow down jump movement gradually)
             self.y -= self.jump_duration * 40 # scale it up so we can jump higher, not by an extremely small float
             if self.jump_duration <= 0 or self.collide_with_walls('y'):
                 self.is_jumping = False # let gravity pull player back down
                 self.jump_duration = 0.5 # reset jump duration for next jump
-            # self.jumped = True
 
 
     def update(self):
@@ -291,7 +279,7 @@ class Player(Sprite):
             self.jump_cooldown -= self.game.dt # same logic as jump_duration
             if self.jump_cooldown <= 0:
                 self.can_jump = True # allow player to jump again after 1 second (prevents double jumps)
-                self.jump_cooldown = 1 # reset for next jump
+                self.jump_cooldown = 0.5 # reset for next jump
         self.get_keys()
         self.gravity()
         # self.jump()
@@ -503,6 +491,8 @@ class Boss(Sprite):
         self.dead = False
         self.lives = 1000000
 
+    # vector math adapted from ChatGPT
+
     def follow_player(self, player):
         # Calculate the direction towards the player (forming a vector which represents 
         # distance from boss to player sprite)
@@ -515,7 +505,6 @@ class Boss(Sprite):
         if self.distance == 0:
             raise Exception("you are too close to the boss!") # end game logically instead of DivideByZeroError
             
-        
         # vector / magnitude = 1, scaling it down but keeping same direction 
         # allows for constant speed
         dx /= self.distance
@@ -660,17 +649,11 @@ class Excalibur(Sprite):
 
     def update(self):
         if self.ready:
-            # print('ready')
-            # print(self.x, self.rect.x, self.y, self.rect.y)
-            # constantly follow player, never gets unequipped
-            # self.rect.x = self.get_pos()[0]
-            # self.rect.y = self.get_pos()[1]
             self.x = self.game.player.x
             self.y = self.game.player.y
             self.rect.x = self.x
             self.rect.y = self.y
-            # print(self.rect.x, self.rect.y)
-            # print(self.x, self.y)
+
 
 class BuffedEnemy(Sprite):
     def __init__(self, game, x, y):
@@ -754,7 +737,6 @@ class MovingPlatform(Sprite):
         self.rect.y = self.y
         self.x  = x * TILESIZE
         self.y = y * TILESIZE
-        # self.lives = 1
         # only move back and forth (x direction)
         self.vx, self.vy = ENEMY_SPEED, 0
 
